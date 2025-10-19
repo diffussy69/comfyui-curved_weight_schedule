@@ -1,4 +1,4 @@
-# ComfyUI-curved_weight_schedule
+# ControlNet- Curved weights and multi-mask weights.
 Custom Node for ComfyUI that allows you set a weighted curve to your ControlNet giving you more control over the weight of the model over the course of generation. 
 
 ==INSTALL==
