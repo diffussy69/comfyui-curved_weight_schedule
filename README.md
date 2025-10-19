@@ -4,8 +4,11 @@ Custom Node for ComfyUI that allows you set a weighted curve to your ControlNet 
 ==INSTALL==
 1. clone this repository to: yourcomfyuipath\custom_nodes
 2. install matplotlib
+
    2a. pip install matplotlib pillow
-3. This node is built with using Kosinkadink's ComfyUI-Advanced-ControlNet in mind, so go install that awesome node!
+
+4. This node is built with using Kosinkadink's ComfyUI-Advanced-ControlNet in mind, so go install that awesome node!
+
    3a. https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet
 
 Boom, that's it.
