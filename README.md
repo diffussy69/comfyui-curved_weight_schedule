@@ -14,8 +14,11 @@ Custom Node for ComfyUI that allows you set a weighted curve to your ControlNet 
 Boom, that's it.
 
 |KEY FEAURES|
+
    -Curved weighting of your ControlNet model(s) throughout image generation
+   
    -Custom weights for different masks 
+   
 
 <img width="982" height="604" alt="image" src="https://github.com/user-attachments/assets/4be11dc7-562c-406a-a7ad-25a72b3c3f30" />
 <img width="631" height="514" alt="image" src="https://github.com/user-attachments/assets/a815bc01-b577-425b-8fa4-c4f0fec11560" />
