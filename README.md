@@ -1,2 +1,14 @@
 # comfyui-curved_weight_schedule
-Custom Node for ComfyUI that allows you set a weighted curve to your control net giving you more control over the weight of the model over the course of generation. 
+Custom Node for ComfyUI that allows you set a weighted curve to your ControlNet giving you more control over the weight of the model over the course of generation. 
+
+==INSTALL==
+1. clone this repository to: yourcomfyuipath\custom_nodes
+2. install matplotlib
+   2a. pip install matplotlib pillow
+3. This node is built with using Kosinkadink's ComfyUI-Advanced-ControlNet in mind, so go install that awesome node!
+   3a. https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet
+
+Boom, that's it.
+
+<img width="631" height="514" alt="image" src="https://github.com/user-attachments/assets/a815bc01-b577-425b-8fa4-c4f0fec11560" />
+
