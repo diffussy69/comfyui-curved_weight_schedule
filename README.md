@@ -12,7 +12,7 @@ Custom Node for ComfyUI that allows you set a weighted curve to your ControlNet 
    3a. https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet
 
 Boom, that's it.
-
+<img width="982" height="604" alt="image" src="https://github.com/user-attachments/assets/4be11dc7-562c-406a-a7ad-25a72b3c3f30" />
 <img width="631" height="514" alt="image" src="https://github.com/user-attachments/assets/a815bc01-b577-425b-8fa4-c4f0fec11560" />
 <img width="737" height="475" alt="image" src="https://github.com/user-attachments/assets/b7692f72-2ded-4926-ada8-690dd794689f" />
 <img width="773" height="400" alt="image" src="https://github.com/user-attachments/assets/7e80f214-b83c-477c-8b02-484a29a5220c" />
