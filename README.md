@@ -8,6 +8,8 @@ Advanced ControlNet scheduling and regional prompting nodes for ComfyUI. Control
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 - **Regional Prompting**: Use different text prompts for different masked areas
+- **Regional Prompt Interpolation**: Smooth gradient transitions between different prompts
+- **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
 - **Multiple Blend Modes**: Max, Add, Multiply, and Average for flexible mask combination
 
 ## 📦 Installation
