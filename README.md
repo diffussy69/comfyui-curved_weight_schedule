@@ -14,10 +14,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 - **Auto Person Mask**: AI-powered automatic person/foreground detection and masking
 - **Auto Background Mask**: Automatic background masking (inverted person mask)
 
-### Image Utilities
-- **Multi-Save Image (Clean)**: Save images to multiple locations with thorough metadata removal
-- **Advanced Repeating Watermark**: Stock-photo style repeating watermarks with rotation and styling
-- **Multiple Blend Modes**: Max, Add, Multiply, and Average for flexible mask combination
+
 
 ## 📦 Installation
 
