@@ -1,6 +1,6 @@
 # ComfyUI Curved Weight Schedule
 
-Advanced ControlNet scheduling, regional prompting, and image utilities for ComfyUI. Control your ControlNet strength across time and space with precision and visual feedback, plus powerful image saving and watermarking tools.
+Advanced ControlNet scheduling, regional prompting, and masking tools for ComfyUI. Control your ControlNet strength across time and space with precision and visual feedback.
 
 ## 🌟 Features
 
@@ -13,8 +13,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 - **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
 - **Auto Person Mask**: AI-powered automatic person/foreground detection and masking
 - **Auto Background Mask**: Automatic background masking (inverted person mask)
-
-
+- **Multiple Blend Modes**: Max, Add, Multiply, and Average for flexible mask combination
 
 ## 📦 Installation
 
@@ -25,7 +24,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 
 2. Clone this repository:
    ```bash
-   git clone https://github.com/diffussy69/comfyui-curved_weight_schedule/tree/main
+   git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
    ```
 
 3. Install dependencies (if not already installed):
@@ -41,8 +40,6 @@ The nodes will appear in:
 - `conditioning/controlnet` → **Curved Timestep Keyframes**
 - `mask` → **Multi-Mask Strength Combiner**, **Mask Symmetry Tool**, **Auto Person Mask**, **Auto Background Mask**
 - `conditioning` → **Regional Prompting**, **Regional Prompt Interpolation**
-- `image/save` → **Multi-Save Image (Clean)**
-- `image/watermark` → **Advanced Repeating Watermark**
 
 ## 🎯 Node Overview
 
@@ -211,80 +208,6 @@ Automatically generate background mask (inverted person mask).
 - Apply different effects to background only
 - Automated regional masking workflows
 
-### 8. Multi-Save Image (Clean)
-
-Save multiple images to different locations with thorough metadata removal.
-
-**Key Parameters:**
-- `image_1` / `image_2`: Images to save
-- `save_path_1` / `save_path_2`: Full paths to save locations
-- `filename_prefix_1` / `filename_prefix_2`: Filename prefixes
-- `filename_suffix_1` / `filename_suffix_2`: Filename suffixes
-- `format`: Output format (png/jpg/jpeg)
-- `quality`: JPEG quality (1-100)
-- `use_exiftool`: Enable thorough exiftool metadata removal (requires exiftool.exe)
-
-**Features:**
-- **Two-stage metadata removal**: PIL strips on save, exiftool thoroughly cleans
-- Auto-creates directories
-- Handles filename conflicts (appends numbers)
-- Timestamps in filenames
-- Separate filename formats per image
-
-**Metadata Removal:**
-For maximum thoroughness:
-1. Download exiftool from https://exiftool.org/
-2. Place `exiftool.exe` in ComfyUI root folder
-3. Enable `use_exiftool` in node
-
-Without exiftool, still removes most metadata via PIL.
-
-**Use Cases:**
-- Save watermarked + clean versions simultaneously
-- Remove all metadata before sharing images
-- Organized multi-destination workflows
-
-### 9. Advanced Repeating Watermark
-
-Create stock-photo style repeating watermarks with full control over styling and positioning.
-
-**Key Parameters:**
-- `image`: Input image
-- `text`: Watermark text
-- `pattern_type`: Watermark pattern
-  - `single`: One centered watermark
-  - `grid`: Regular grid pattern
-  - `diagonal`: Offset rows for diagonal pattern (stock photo style)
-  - `dense_grid`: Tighter spacing for maximum coverage
-- `font_size`: Text size (8-500)
-- `font_color`: Preset colors or custom hex
-- `opacity`: Transparency (0.0-1.0)
-- `rotation`: Angle in degrees (-180 to 180)
-- `bold` / `italic`: Text styling
-- `spacing_x` / `spacing_y`: Distance between watermarks
-- `x_offset` / `y_offset`: Position adjustment
-- `font_name`: Font file (e.g., "arial.ttf")
-
-**Features:**
-- Multiple pattern types (single, grid, diagonal, dense)
-- Full rotation control
-- Bold and italic text support
-- Custom spacing and positioning
-- Automatic font variant detection (arialbd.ttf, ariali.ttf, etc.)
-
-**Stock Photo Style Settings:**
-- `pattern_type`: diagonal
-- `rotation`: -45
-- `opacity`: 0.15-0.3
-- `bold`: true
-- `spacing_x/y`: 350-500
-
-**Use Cases:**
-- Protect images from unauthorized use
-- Professional watermarking workflows
-- Copyright notices
-- Branding
-
 ## 💡 Usage Examples
 
 ### Example 1: Composition Lock (Strong Start, Fade Out)
@@ -451,43 +374,7 @@ Automatically separate person from background for different ControlNet strengths
 
 **Result:** Person follows ControlNet closely (1.0 strength), background has creative freedom (0.3 strength) - fully automated, no manual masking!
 
-### Example 6: Watermark + Clean Save Workflow
-
-Create watermarked and clean versions simultaneously.
-
-**Workflow:**
-```
-┌──────────────┐
-│ Generate     │
-│ Image        │
-└──────┬───────┘
-       │
-       ├─────────────────────────┐
-       │                         │
-┌──────▼────────────────┐   ┌────┴──────┐
-│ Advanced Repeating    │   │ (Bypass)  │
-│ Watermark             │   └────┬──────┘
-│ - pattern: diagonal   │        │
-│ - rotation: -45       │        │
-│ - text: "© 2025"      │        │
-└──────┬────────────────┘        │
-       │ watermarked             │ clean
-       │                         │
-       └────────┬────────────────┘
-                │
-    ┌───────────▼──────────────────┐
-    │ Multi-Save Image (Clean)     │
-    │ - image_1: watermarked       │
-    │ - save_path_1: [WM] folder   │
-    │ - image_2: clean             │
-    │ - save_path_2: [NO WM] folder│
-    │ - use_exiftool: true         │
-    └──────────────────────────────┘
-```
-
-**Result:** Automatically saves watermarked version to one folder, clean version to another, both with metadata stripped!
-
-### Example 7: Symmetrical Masking for Portraits
+### Example 6: Symmetrical Masking for Portraits
 
 Quickly create symmetrical masks for portraits or architecture.
 
@@ -515,7 +402,7 @@ Quickly create symmetrical masks for portraits or architecture.
 
 **Result:** Paint one eye, instantly get both eyes masked perfectly symmetrically.
 
-### Example 8: Ultimate Control (All Nodes Combined)
+### Example 7: Ultimate Control (All Nodes Combined)
 
 Combine timestep curves + regional ControlNet strengths + regional prompts + interpolation + symmetry + auto-masking.
 
@@ -560,7 +447,6 @@ Combine timestep curves + regional ControlNet strengths + regional prompts + int
 - Different ControlNet strengths per region (strong, medium, weak)
 - Strength fades over time (starts strong, ends weak)
 - Symmetrical masks if needed (portraits, architecture)
-- Save with watermark + clean version simultaneously
 - Complete automation with maximum creative control! 🎨
 
 ## 🎨 Practical Tips
@@ -664,43 +550,6 @@ Combine timestep curves + regional ControlNet strengths + regional prompts + int
 - Processing: 2-5 seconds per image
 - Cached for future use
 
-### Watermarking Tips
-
-**Stock Photo Style:**
-- `pattern_type`: diagonal
-- `rotation`: -45
-- `opacity`: 0.15-0.3
-- `bold`: true
-- `spacing_x/y`: 350-500
-
-**Security (Heavy Watermarking):**
-- `pattern_type`: dense_grid
-- `opacity`: 0.4-0.6
-- `spacing_x/y`: 200-300
-
-**Subtle Branding:**
-- `pattern_type`: single
-- `opacity`: 0.2-0.3
-- Adjust with `x_offset`/`y_offset` for corner placement
-
-### Multi-Save Tips
-
-**Maximum Metadata Removal:**
-1. Download exiftool from https://exiftool.org/
-2. Place `exiftool.exe` in ComfyUI root
-3. Enable `use_exiftool` in node
-4. Two-stage removal ensures complete cleaning
-
-**Without exiftool:**
-- Still removes most metadata via PIL
-- Good enough for most use cases
-- Enable if sharing images publicly
-
-**Filename Organization:**
-- Use descriptive prefixes: "watermarked", "clean", "final"
-- Suffixes for variants: "v1", "exported", "web"
-- Timestamps automatically added
-
 ## 🐛 Troubleshooting
 
 **Issue:** Graph not showing
@@ -747,20 +596,6 @@ Combine timestep curves + regional ControlNet strengths + regional prompts + int
   - Increase alpha_matting thresholds if too aggressive
   - Try `u2net_human_seg` specifically for people
   - Enable `post_process_mask` for cleanup
-
-**Issue:** Watermarks not showing or wrong position
-- **Solution:**
-  - Check opacity isn't too low
-  - Verify `pattern_type` is not "single" if you want repeating
-  - Adjust `spacing_x/y` if too sparse
-  - Check `rotation` isn't making text unreadable
-
-**Issue:** Multi-Save not removing metadata
-- **Solution:**
-  - Download and install exiftool.exe in ComfyUI root
-  - Enable `use_exiftool=true`
-  - Check file permissions on save directories
-  - Verify paths are correct and writable
 
 **Issue:** ControlNet effect too strong/weak everywhere
 - **Solution:**
