@@ -210,6 +210,55 @@ Automatically generate background mask (inverted person mask).
 
 ## 💡 Usage Examples
 
+### Understanding How Timestep and Mask Strengths Work Together
+
+Both **Curved Timestep Keyframes** and **Multi-Mask Strength Combiner** control ControlNet strength, but in complementary ways that work **together**, not against each other.
+
+**The Formula:**
+```
+Final ControlNet Strength = Timestep Strength × Mask Strength
+```
+
+**Curved Timestep Keyframes (TIME control):**
+- Controls **WHEN** ControlNet is strong during generation (across steps)
+- Affects the **entire image** at once
+- Changes over time: Step 1 might be 1.3, Step 10 might be 0.8, Step 20 might be 0.3
+
+**Multi-Mask Combiner (SPACE control):**
+- Controls **WHERE** ControlNet is strong in the image (per region)
+- Affects **specific areas** based on masks
+- Stays consistent across time (unless you change it)
+
+**Example Scenario:**
+
+You have:
+- mask_1 = person's face (strength: 1.0)
+- mask_2 = person's body (strength: 0.5)
+- mask_3 = background (strength: 0.2)
+
+Your timestep curve starts at 1.2 and fades to 0.6
+
+**At Step 5 (early, timestep = 1.2):**
+```
+Face:       1.2 × 1.0 = 1.20 (very strong - lock in structure)
+Body:       1.2 × 0.5 = 0.60 (medium - guide pose)
+Background: 1.2 × 0.2 = 0.24 (weak - creative freedom)
+```
+
+**At Step 20 (late, timestep = 0.6):**
+```
+Face:       0.6 × 1.0 = 0.60 (medium - refine details)
+Body:       0.6 × 0.5 = 0.30 (weak - add variation)
+Background: 0.6 × 0.2 = 0.12 (very weak - mostly free)
+```
+
+**Why This Is Powerful:**
+- **Without timestep curves**: All regions stay at fixed strength the entire time (rigid)
+- **Without masks**: Entire image gets same strength everywhere (no regional control)
+- **With both**: Each region has its own strength that evolves over time naturally
+
+**Key Insight:** Mask strengths set the **relative priorities** (face more important than background), while timestep curves control the **overall intensity over time** (strong start, gentle finish). The ratios between regions are maintained throughout generation.
+
 ### Example 1: Composition Lock (Strong Start, Fade Out)
 
 Lock in composition early, then let the model add details freely.
@@ -608,11 +657,6 @@ Combine timestep curves + regional ControlNet strengths + regional prompts + int
 - ComfyUI
 - [ComfyUI-Advanced-ControlNet](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet) (for ControlNet nodes)
 - Python packages: `matplotlib`, `pillow`, `numpy`, `torch`, `rembg`
-
-**Optional but Recommended:**
-- `exiftool.exe` for thorough metadata removal (Multi-Save node)
-- Place in ComfyUI root directory
-- Download from https://exiftool.org/
 
 ## 🤝 Contributing
 
