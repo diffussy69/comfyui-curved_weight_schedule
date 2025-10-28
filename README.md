@@ -14,6 +14,29 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 - **Auto Person Mask**: AI-powered automatic person/foreground detection and masking
 - **Auto Background Mask**: Automatic background masking (inverted person mask)
 
+- ### Curved LoRA Scheduler (Multi-Curve)
+
+Apply up to 3 LoRAs with independent curved weight schedules over time.
+
+**Key Parameters:**
+- `lora_X_name`: Select LoRA file
+- `start_percent` / `end_percent`: When LoRA activates (0.0–1.0)
+- `start_strength` / `end_strength`: Weight range
+- `curve_type`: 13 curve types (same as ControlNet node)
+- `curve_param`: Controls curve steepness
+- `strength_clip`: Separate CLIP strength
+- `show_graph`: Visual preview
+- `show_debug`: Detailed schedule info
+
+**Outputs:**
+- `MODEL`, `CLIP`: Patched with scheduled LoRAs
+- `curve_graph`: Preview image (connect to Preview Image)
+
+**Use Cases:**
+- Start with style LoRA → fade to detail LoRA
+- Strong character LoRA early → weak later
+- Oscillating style effects with `sine_wave`
+
 ### Image Utilities
 - **Multi-Save Image (Clean)**: Save images to multiple locations with thorough metadata removal
 - **Advanced Repeating Watermark**: Stock-photo style repeating watermarks with rotation and styling
