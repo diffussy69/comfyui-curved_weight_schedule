@@ -7,38 +7,40 @@ Control your ControlNet and LoRA strength across time and space with precision a
 🧠 ControlNet & Masking
 
 Curved Timestep Keyframes: Schedule ControlNet strength across generation steps with 14 different curve types
+
 Visual Feedback: Real-time graph preview showing your strength curve
+
 Multi-Mask Strength Combiner: Apply different ControlNet strengths to different regions of your image
+
 Regional Prompting: Use different text prompts for different masked areas
+
 Regional Prompt Interpolation: Smooth gradient transitions between different prompts
+
 Mask Symmetry Tool: Mirror masks across axes for symmetrical compositions
+
 Auto Person Mask: AI-powered automatic person/foreground detection and masking
+
 Auto Background Mask: Automatic background masking (inverted person mask)
+
 Multiple Blend Modes: Max, Add, Multiply, and Average for flexible mask combination
 
 🎚️ LoRA Scheduling (New!)
 
 Curved LoRA Scheduler (Multi): Apply up to 3 LoRA models with independent activation ranges, strength curves, and CLIP scaling
+
 Independent Curves: Each LoRA can start, stop, and change strength at different sampling steps
+
 13 Curve Types: linear, ease_in, ease_out, ease_in_out, strong_to_weak, weak_to_strong, sine_wave, bell_curve, reverse_bell, exponential_up, exponential_down, bounce, custom_bezier
+
 Graph Visualization: Generates a matplotlib chart showing all LoRA schedules in one view
+
 Dynamic Layering: Fade styles in/out, overlap influences, or alternate effects over time
+
 Fully Compatible: Works with any LoRA in your ComfyUI folder
 
 📦 Installation
-
-Navigate to your ComfyUI custom nodes directory:
-
 cd ComfyUI/custom_nodes/
-
-
-Clone this repository:
-
 git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
-
-
-Install dependencies (if not already installed):
-
 pip install matplotlib pillow numpy torch rembg
 
 
@@ -46,7 +48,8 @@ pip install matplotlib pillow numpy torch rembg
 The first run will automatically download the AI models (~176 MB).
 
 Restart ComfyUI.
-Your nodes will appear in the following categories:
+
+Nodes appear in:
 
 conditioning/controlnet → Curved Timestep Keyframes
 
@@ -57,21 +60,17 @@ conditioning → Regional Prompting, Regional Prompt Interpolation
 loaders → Curved LoRA Scheduler (Multi)
 
 🎯 Node Overview
-1–7. (Existing Nodes)
-
-(Curved Timestep Keyframes, Multi-Mask Combiner, Regional Prompting, Regional Prompt Interpolation, Mask Symmetry Tool, Auto Person Mask, Auto Background Mask – see above for details.)
-
 8. Curved LoRA Scheduler (Multi)
 
 Category: loaders → Curved LoRA Scheduler (Multi)
 
 Control multiple LoRA models across your diffusion timeline with custom strength curves and activation ranges.
 
-Purpose:
+Purpose
+
 Blend styles, swap characters, or evolve composition dynamically by adjusting each LoRA’s strength over time.
 
 Key Parameters
-
 Parameter	Description
 model / clip	The model and CLIP inputs to apply LoRAs to
 num_steps	Total sampler steps (should match your sampler)
@@ -82,17 +81,15 @@ lora_X_curve_type / curve_param	Defines the shape and steepness of the curve
 lora_X_strength_clip	Optional additional CLIP scaling
 print_schedule	Prints each LoRA’s weight schedule in the console
 show_graph	Displays a visual graph of all LoRA curves
+Available Curve Types
 
-Available Curve Types:
 linear, ease_in, ease_out, ease_in_out, strong_to_weak, weak_to_strong, sine_wave, bell_curve, reverse_bell, exponential_up, exponential_down, bounce, custom_bezier
 
 Outputs
-
 Output	Description
 MODEL	Model with all LoRAs applied dynamically
 CLIP	CLIP with LoRA scaling applied
 curve_graph	Real-time PNG preview of all LoRA strength curves
-
 Visual Feedback
 
 Each LoRA is color-coded in the graph
@@ -114,9 +111,6 @@ Use Cases
 🧠 Fine Control: Keep composition stable early, refine details later
 
 💡 Example Workflow
-
-Apply three LoRAs with different activation windows and curve shapes:
-
 ┌──────────────────┐
 │   Load Checkpoint │
 └─────────┬─────────┘
@@ -137,11 +131,11 @@ Apply three LoRAs with different activation windows and curve shapes:
 
 Result:
 LoRA 1 dominates early and fades out, LoRA 2 grows in mid-steps,
-LoRA 3 peaks at the middle for balanced blending — all visualized in the graph output.
+LoRA 3 peaks in the middle for balanced blending — all visualized in the graph output.
 
 🎨 Practical Tips
 
-(Keep your existing ControlNet and Mask tips here — they remain valid and helpful.)
+(Your existing ControlNet and Masking tips remain unchanged.)
 
 🐛 Troubleshooting
 
