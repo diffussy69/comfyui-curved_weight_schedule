@@ -37,11 +37,6 @@ Apply up to 3 LoRAs with independent curved weight schedules over time.
 - Strong character LoRA early → weak later
 - Oscillating style effects with `sine_wave`
 
-### Image Utilities
-- **Multi-Save Image (Clean)**: Save images to multiple locations with thorough metadata removal
-- **Advanced Repeating Watermark**: Stock-photo style repeating watermarks with rotation and styling
-- **Multiple Blend Modes**: Max, Add, Multiply, and Average for flexible mask combination
-
 ## 📦 Installation
 
 1. Navigate to your ComfyUI custom nodes directory:
