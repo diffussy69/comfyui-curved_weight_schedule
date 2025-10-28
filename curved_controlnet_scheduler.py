@@ -160,8 +160,13 @@ class CurvedControlNetScheduler:
             else:
                 curve = t
             
-            # Map curve values to strength range
-            strengths = start_strength * curve + end_strength * (1 - curve)
+            # Invert curve if requested
+            if invert_curve:
+                curve = 1 - curve
+            
+            # FIXED: Map curve values to strength range correctly
+            # This now properly interpolates from start_strength to end_strength
+            strengths = start_strength + (end_strength - start_strength) * curve
             
             # Map to percent range
             percents = np.linspace(start_percent, end_percent, num_keyframes)
