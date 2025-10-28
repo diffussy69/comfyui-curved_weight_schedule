@@ -1,212 +1,98 @@
-# ComfyUI Curved Weight Schedule
+ComfyUI Curved Weight Schedule
 
-Advanced ControlNet scheduling, regional prompting, and masking tools for ComfyUI. Control your ControlNet strength across time and space with precision and visual feedback.
+Advanced ControlNet scheduling, regional prompting, masking, and LoRA weight automation tools for ComfyUI.
+Control your ControlNet and LoRA strength across time and space with precision and visual feedback.
 
-## 🌟 Features
+🌟 Features
+🧠 ControlNet & Masking Tools
 
-### ControlNet & Masking
-- **Curved Timestep Keyframes**: Schedule ControlNet strength across generation steps with 14 different curve types
-- **Visual Feedback**: Real-time graph preview showing your strength curve
-- **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
-- **Regional Prompting**: Use different text prompts for different masked areas
-- **Regional Prompt Interpolation**: Smooth gradient transitions between different prompts
-- **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
-- **Auto Person Mask**: AI-powered automatic person/foreground detection and masking
-- **Auto Background Mask**: Automatic background masking (inverted person mask)
-- **Multiple Blend Modes**: Max, Add, Multiply, and Average for flexible mask combination
+Curved Timestep Keyframes – schedule ControlNet strength across generation steps with 14 curve types
 
-## 📦 Installation
+Visual Feedback – real-time matplotlib graph of your strength curves
 
-1. Navigate to your ComfyUI custom nodes directory:
-   ```bash
-   cd ComfyUI/custom_nodes/
-   ```
+Multi-Mask Strength Combiner – different ControlNet strengths for multiple masked regions
 
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
-   ```
+Regional Prompting + Interpolation – different prompts per region with smooth gradient transitions
 
-3. Install dependencies (if not already installed):
-   ```bash
-   pip install matplotlib pillow numpy torch rembg
-   ```
-   
-   **Note:** `rembg` is only required if you plan to use the Auto Person/Background Mask nodes. First run will download AI models (~176MB automatically).
+Mask Symmetry Tool – mirror or radial symmetry for masks
 
-4. Restart ComfyUI
+Auto Person / Background Masking – AI-powered foreground/background segmentation
 
-The nodes will appear in:
-- `conditioning/controlnet` → **Curved Timestep Keyframes**
-- `mask` → **Multi-Mask Strength Combiner**, **Mask Symmetry Tool**, **Auto Person Mask**, **Auto Background Mask**
-- `conditioning` → **Regional Prompting**, **Regional Prompt Interpolation**
+Multiple Blend Modes – Max, Add, Multiply, Average
 
-## 🎯 Node Overview
+🎚️ LoRA Scheduling (New!)
 
-### 1. Curved Timestep Keyframes
+Curved LoRA Scheduler (Multi) – apply up to 3 LoRA models with independent activation ranges, strength curves, and CLIP scaling
 
-Control ControlNet strength across generation steps using mathematical curves.
+13 curve types (linear, ease_in/out, strong_to_weak, bell_curve, sine_wave, bounce, etc.)
 
-**Key Parameters:**
-- `num_keyframes`: Number of control points (2-100)
-- `start_percent` / `end_percent`: When to start/stop the curve (0.0-1.0)
-- `start_strength` / `end_strength`: Strength values at start and end
-- `curve_type`: Shape of the strength transition
-- `curve_param`: Controls transition speed/steepness
+Automatic matplotlib graph preview for all LoRA weight schedules
 
-**Available Curve Types:**
-- `strong_to_weak`: Start with high control, gradually release
-- `weak_to_strong`: Build up control over time
-- `linear`: Straight line transition
-- `ease_in` / `ease_out` / `ease_in_out`: Smooth acceleration curves
-- `bell_curve`: Strong in middle, weak at ends
-- `reverse_bell`: Weak in middle, strong at ends
-- `exponential_up` / `exponential_down`: Dramatic transitions
-- `sine_wave`: Oscillating control (experimental)
-- `bounce`: Bouncing effect
-- `custom_bezier`: Customizable bezier curve
+Fine-grained temporal control: fade LoRAs in/out, layer multiple styles, or alternate strengths over time
 
-**Outputs:**
-- `TIMESTEP_KF`: Connect to Apply Advanced ControlNet's `timestep_kf` input
-- `curve_graph`: Visual preview (connect to Preview Image)
+Works with any LoRA available in your ComfyUI environment
 
-### 2. Multi-Mask Strength Combiner
+📦 Installation
 
-Combine up to 5 separate masks with different ControlNet strengths.
+(unchanged)
 
-**Key Parameters:**
-- `base_strength`: Global multiplier for all masks
-- `mask_X`: Individual mask inputs (1-5)
-- `mask_X_strength`: Strength multiplier for each mask
-- `blend_mode`: How overlapping masks combine
-- `normalize_output`: Clamp result to [0,1]
+🎯 Node Overview
+1–7. (Existing Nodes)
 
-**Blend Modes:**
-- `max`: Takes highest strength (best for separate regions)
-- `add`: Adds strengths together (for layering)
-- `multiply`: Multiplies strengths (for soft effects)
-- `average`: Averages all strengths (for smooth blending)
+(Curved Timestep Keyframes, Multi-Mask Combiner, Regional Prompting, Regional Prompt Interpolation, Mask Symmetry Tool, Auto Person Mask, Auto Background Mask – as in your current README)
 
-**Output:**
-- `combined_mask`: Connect to Apply Advanced ControlNet's `mask_optional` input
+8. Curved LoRA Scheduler (Multi)
 
-### 3. Regional Prompting
+Apply multiple LoRA models with independent curved weight scheduling across sampling steps.
 
-Apply different text prompts to different regions of your image.
+Purpose:
+Precisely control how up to three LoRAs fade in, fade out, or vary in strength over the generation timeline — each with its own curve type, strength range, and active step range.
 
-**Key Parameters:**
-- `clip`: Your CLIP model
-- `base_positive`: Base prompt applied to entire image
-- `region_X_mask`: Mask for each region (1-5)
-- `region_X_prompt`: Text prompt for that region
-- `region_X_strength`: How strongly the prompt affects the region
+Key Parameters
 
-**Output:**
-- `conditioning`: Connect to KSampler's `positive` input
+Parameter	Description
+model / clip	Base model and CLIP to apply LoRAs to
+num_steps	Total number of sampler steps (should match your sampler)
+lora_X_name	Select LoRA file for slot X (1–3)
+lora_X_start_step / end_step	When each LoRA becomes active/inactive
+lora_X_start_strength / end_strength	Strength range during its active window
+lora_X_curve_type / curve_param	Defines curve shape and steepness
+lora_X_strength_clip	Additional scaling applied to CLIP encoder
+print_schedule	Prints LoRA scheduling details to console
+show_graph	Displays matplotlib graph of all LoRA curves
 
-### 4. Regional Prompt Interpolation
+Available Curve Types
 
-Smoothly interpolate between different prompts across regions with gradient transitions.
+linear, ease_in, ease_out, ease_in_out, strong_to_weak, weak_to_strong, sine_wave, bell_curve, reverse_bell, exponential_up, exponential_down, bounce, custom_bezier
 
-**Key Parameters:**
-- `clip`: Your CLIP model
-- `base_positive`: Base prompt applied everywhere
-- `region_X_mask`: Masks for regions to interpolate between (supports 3 regions)
-- `region_X_prompt`: Prompts for each region
-- `region_X_strength`: Conditioning strength for each region
-- `interpolation_steps`: Number of gradient steps between regions (2-20)
-- `transition_mode`: How to blend between regions
-  - `linear`: Straight blend
-  - `smooth`: Smoothstep S-curve
-  - `ease_in_out`: Slow start/end, fast middle
-- `gradient_direction`: Direction of transition flow
-  - `auto`: Detects from mask positions
-  - `left_to_right`, `right_to_left`, `top_to_bottom`, `bottom_to_top`, `radial`
+Outputs
 
-**Outputs:**
-- `conditioning`: Connect to KSampler's `positive` input
-- `interpolation_viz`: Visual preview of interpolation zones
+Output	Description
+MODEL	Model with LoRAs dynamically applied
+CLIP	CLIP with LoRAs applied
+curve_graph	PNG visualization of LoRA strength curves
 
-**Use Cases:**
-- Sunrise → Day → Sunset transitions
-- Sky → Horizon → Ground gradients
-- Temperature transitions (hot → cold)
-- Depth-based prompts (near → far)
+Visual Feedback
 
-### 5. Mask Symmetry Tool
+Real-time matplotlib chart showing:
 
-Mirror and flip masks across different axes for symmetrical compositions.
+Each LoRA’s active range and curve
 
-**Key Parameters:**
-- `mask`: Input mask to mirror
-- `symmetry_mode`: Type of symmetry to apply
-  - `none`: No symmetry (passthrough)
-  - `horizontal`: Left ↔ Right mirror
-  - `vertical`: Top ↔ Bottom mirror
-  - `both`: Mirror both axes (4 copies)
-  - `diagonal_tl_br`: Mirror along \ diagonal
-  - `diagonal_tr_bl`: Mirror along / diagonal
-  - `radial_4way`: 4-way radial symmetry (kaleidoscope)
-- `blend_mode`: How to combine original with mirrored
-  - `replace`: Use mirrored where it exists
-  - `add`: Add mirrored to original
-  - `max`: Take highest value
-  - `average`: Average both
-- `blend_strength`: Strength of mirrored portion (0.0-1.0)
-- `invert_mirrored`: Invert the mirrored portion
+Average applied weight per LoRA
 
-**Output:**
-- `symmetrical_mask`: Mirrored mask ready to use
+Combined overview of all active curves
 
-**Use Cases:**
-- Portraits: Paint one side of face, mirror to other
-- Architecture: Paint half of building
-- Butterflies/symmetrical subjects
-- Quick masking workflows
+Use Cases
 
-### 6. Auto Person Mask
+Fade in style LoRAs early for composition lock
 
-Automatically detect and mask people/foreground objects using AI (U2-Net).
+Introduce character LoRAs late for detail refinement
 
-**Key Parameters:**
-- `image`: Input image
-- `model`: AI model to use
-  - `u2net`: General purpose, best quality (default)
-  - `u2netp`: Faster, slightly lower quality
-  - `u2net_human_seg`: Optimized for people/portraits
-  - `silueta`: Alternative general model
-- `alpha_matting`: Enable for better edge quality (slower but handles hair/fine details)
-- `alpha_matting_foreground_threshold`: Fine-tune edge detection (0-255)
-- `alpha_matting_background_threshold`: Fine-tune edge detection (0-255)
-- `alpha_matting_erode_size`: Edge refinement size
-- `post_process_mask`: Clean up mask with morphological operations
+Blend multiple styles or themes over time
 
-**Outputs:**
-- `person_mask`: White = person, Black = background
-- `masked_image`: Preview of person with transparent background
+Oscillate LoRA strengths for experimental effects
 
-**Use Cases:**
-- Automated masking for Multi-Mask Combiner
-- Different ControlNet strengths for person vs background
-- Regional prompting automation
-- Background removal/replacement
-
-**First Run:** Will automatically download AI model (~176MB), only happens once.
-
-### 7. Auto Background Mask
-
-Automatically generate background mask (inverted person mask).
-
-**Key Parameters:**
-- Same as Auto Person Mask
-
-**Output:**
-- `background_mask`: White = background, Black = person
-
-**Use Cases:**
-- Pair with Auto Person Mask for complete scene separation
-- Apply different effects to background only
-- Automated regional masking workflows
+Category: loaders → Curved LoRA Scheduler (Multi)
 
 ## 💡 Usage Examples
 
