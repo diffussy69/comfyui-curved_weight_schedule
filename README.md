@@ -1,69 +1,54 @@
 # ComfyUI Curved Weight Schedule
 
-Advanced ControlNet scheduling, regional prompting, and image utilities for ComfyUI. Control your ControlNet strength across time and space with precision and visual feedback, plus powerful image saving and watermarking tools.
+Advanced ControlNet scheduling, LoRA scheduling, regional prompting, and image utilities for ComfyUI. Control your ControlNet and LoRA strengths across time and space with precision and visual feedback, plus powerful masking and regional prompting tools.
 
 ## 🌟 Features
 
-### ControlNet & Masking
-- **Curved Timestep Keyframes**: Schedule ControlNet strength across generation steps with 14 different curve types
+### ControlNet Scheduling
+- **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with 13 different curve types
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
+
+### LoRA Scheduling
+- **Curved LoRA Scheduler (Multi)**: Apply up to 3 LoRAs with independent curved weight schedules
+- **Independent Control**: Each LoRA gets its own curve, strength range, and active steps
+- **Multi-LoRA Visualization**: See all LoRA schedules on one graph with color-coded curves
+
+### Regional Prompting & Masking
 - **Regional Prompting**: Use different text prompts for different masked areas
 - **Regional Prompt Interpolation**: Smooth gradient transitions between different prompts
 - **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
 - **Auto Person Mask**: AI-powered automatic person/foreground detection and masking
 - **Auto Background Mask**: Automatic background masking (inverted person mask)
 
-- ### Curved LoRA Scheduler (Multi-Curve)
-
-Apply up to 3 LoRAs with independent curved weight schedules over time.
-
-**Key Parameters:**
-- `lora_X_name`: Select LoRA file
-- `start_percent` / `end_percent`: When LoRA activates (0.0–1.0)
-- `start_strength` / `end_strength`: Weight range
-- `curve_type`: 13 curve types (same as ControlNet node)
-- `curve_param`: Controls curve steepness
-- `strength_clip`: Separate CLIP strength
-- `show_graph`: Visual preview
-- `show_debug`: Detailed schedule info
-
-**Outputs:**
-- `MODEL`, `CLIP`: Patched with scheduled LoRAs
-- `curve_graph`: Preview image (connect to Preview Image)
-
-**Use Cases:**
-- Start with style LoRA → fade to detail LoRA
-- Strong character LoRA early → weak later
-- Oscillating style effects with `sine_wave`
-
 ## 📦 Installation
 
 1. Navigate to your ComfyUI custom nodes directory:
-   ```bash
-   cd ComfyUI/custom_nodes/
-   ```
+```bash
+cd ComfyUI/custom_nodes/
+```
 
 2. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/comfyui-curved_weight_schedule
-   ```
+```bash
+git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
+```
 
 3. Install dependencies (if not already installed):
-   ```bash
-   pip install matplotlib pillow numpy torch
-   ```
+```bash
+pip install matplotlib pillow numpy torch
+```
 
 4. Restart ComfyUI
 
 The nodes will appear in:
-- `conditioning/controlnet` → **Curved Timestep Keyframes**
-- `mask` → **Multi-Mask Strength Combiner**, **Mask Symmetry Tool**
-- `conditioning` → **Regional Prompting**, **Regional Prompt Interpolation**
+- `conditioning/controlnet` → Curved ControlNet Scheduler
+- `loaders` → Curved LoRA Scheduler (Multi)
+- `mask` → Multi-Mask Strength Combiner, Mask Symmetry Tool
+- `conditioning` → Regional Prompting, Regional Prompt Interpolation
 
 ## 🎯 Node Overview
 
-### 1. Curved Timestep Keyframes
+### 1. Curved ControlNet Scheduler
 
 Control ControlNet strength across generation steps using mathematical curves.
 
@@ -87,10 +72,56 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `custom_bezier`: Customizable bezier curve
 
 **Outputs:**
-- `TIMESTEP_KF`: Connect to Apply Advanced ControlNet's `timestep_kf` input
+- `TIMESTEP_KF`: Connect to Apply Advanced ControlNet's timestep_kf input
 - `curve_graph`: Visual preview (connect to Preview Image)
 
-### 2. Multi-Mask Strength Combiner
+### 2. Curved LoRA Scheduler (Multi)
+
+Apply up to 3 LoRAs with completely independent curved weight schedules over the generation process.
+
+**Key Parameters (Per LoRA):**
+- `lora_X_name`: Select LoRA file from your loras folder
+- `lora_X_start_step`: Step to start applying this LoRA (0 to num_steps)
+- `lora_X_end_step`: Step to stop applying this LoRA
+- `lora_X_start_strength`: LoRA strength at start_step (-5.0 to 5.0)
+- `lora_X_end_strength`: LoRA strength at end_step (-5.0 to 5.0)
+- `lora_X_curve_type`: Same 13 curve types as ControlNet scheduler
+- `lora_X_curve_param`: Controls curve steepness (0.1 to 10.0)
+- `lora_X_strength_clip`: Separate CLIP strength multiplier
+
+**Global Parameters:**
+- `num_steps`: Total number of sampling steps (must match your sampler)
+- `print_schedule`: Print detailed weight schedules to console
+- `show_graph`: Generate visual preview graph
+
+**Outputs:**
+- `MODEL`: Model with all LoRA patches applied
+- `CLIP`: CLIP with all LoRA patches applied
+- `curve_graph`: Multi-LoRA visualization (connect to Preview Image)
+
+**Use Cases:**
+- **Style Crossfade**: Fade from one style LoRA to another
+  - LoRA 1: Style A (1.0→0.0, strong_to_weak)
+  - LoRA 2: Style B (0.0→1.0, weak_to_strong)
+  
+- **Character + Detail**: Strong character early, add details later
+  - LoRA 1: Character (1.2→0.5, exponential_down, steps 0-20)
+  - LoRA 2: Details (0.0→1.0, ease_in, steps 10-30)
+  
+- **Bell Curve Effect**: Emphasize LoRA in middle of generation
+  - LoRA 1: Style (0.3→0.3, bell_curve, steps 0-30)
+
+- **Oscillating Style**: Create rhythmic style variations
+  - LoRA 1: Effect (sine_wave with high curve_param)
+
+**Important Notes:**
+- Set any LoRA to "None" to disable it (use 1, 2, or all 3 LoRAs as needed)
+- Each LoRA's schedule is completely independent
+- The node applies the **averaged weight** from each LoRA's curve for stability
+- The graph shows the full curve and indicates the applied average
+- Make sure `num_steps` matches your sampler's step count
+
+### 3. Multi-Mask Strength Combiner
 
 Combine up to 5 separate masks with different ControlNet strengths.
 
@@ -108,9 +139,9 @@ Combine up to 5 separate masks with different ControlNet strengths.
 - `average`: Averages all strengths (for smooth blending)
 
 **Output:**
-- `combined_mask`: Connect to Apply Advanced ControlNet's `mask_optional` input
+- `combined_mask`: Connect to Apply Advanced ControlNet's mask_optional input
 
-### 3. Regional Prompting
+### 4. Regional Prompting
 
 Apply different text prompts to different regions of your image.
 
@@ -122,9 +153,9 @@ Apply different text prompts to different regions of your image.
 - `region_X_strength`: How strongly the prompt affects the region
 
 **Output:**
-- `conditioning`: Connect to KSampler's `positive` input
+- `conditioning`: Connect to KSampler's positive input
 
-### 4. Regional Prompt Interpolation
+### 5. Regional Prompt Interpolation
 
 Smoothly interpolate between different prompts across regions with gradient transitions.
 
@@ -144,7 +175,7 @@ Smoothly interpolate between different prompts across regions with gradient tran
   - `left_to_right`, `right_to_left`, `top_to_bottom`, `bottom_to_top`, `radial`
 
 **Outputs:**
-- `conditioning`: Connect to KSampler's `positive` input
+- `conditioning`: Connect to KSampler's positive input
 - `interpolation_viz`: Visual preview of interpolation zones
 
 **Use Cases:**
@@ -153,7 +184,7 @@ Smoothly interpolate between different prompts across regions with gradient tran
 - Temperature transitions (hot → cold)
 - Depth-based prompts (near → far)
 
-### 5. Mask Symmetry Tool
+### 6. Mask Symmetry Tool
 
 Mirror and flip masks across different axes for symmetrical compositions.
 
@@ -186,9 +217,79 @@ Mirror and flip masks across different axes for symmetrical compositions.
 
 ## 💡 Usage Examples
 
-### Example 1: Composition Lock (Strong Start, Fade Out)
+### Example 1: LoRA Style Crossfade
 
-Lock in composition early, then let the model add details freely.
+Smoothly transition from one LoRA style to another during generation.
+
+**Workflow:**
+```
+┌─────────────────────────────────┐
+│ Curved LoRA Scheduler (Multi)   │
+│                                 │
+│ LoRA 1: anime_style.safetensors│
+│ - start_step: 0                 │
+│ - end_step: 20                  │
+│ - start_strength: 1.5           │
+│ - end_strength: 0.0             │
+│ - curve_type: strong_to_weak    │
+│ - curve_param: 2.5              │
+│                                 │
+│ LoRA 2: photorealistic.safetensors│
+│ - start_step: 10                │
+│ - end_step: 30                  │
+│ - start_strength: 0.0           │
+│ - end_strength: 1.2             │
+│ - curve_type: weak_to_strong    │
+│ - curve_param: 2.0              │
+│                                 │
+│ LoRA 3: None                    │
+└────────┬────────────────────────┘
+         │
+         ├─────────┐
+         │         │
+    ┌────▼───┐  ┌─▼────────┐
+    │ MODEL  │  │ CLIP     │
+    │ Output │  │ Output   │
+    └────┬───┘  └──────────┘
+         │
+    ┌────▼──────┐
+    │ KSampler  │
+    └───────────┘
+```
+
+**Result:** Starts with strong anime style that gradually fades out while photorealistic style fades in, creating a smooth artistic transition.
+
+### Example 2: Character + Environment + Details
+
+Layer multiple LoRAs with different timing for complex compositions.
+
+**Workflow:**
+```
+┌─────────────────────────────────┐
+│ Curved LoRA Scheduler (Multi)   │
+│                                 │
+│ LoRA 1: character_lora          │
+│ - start_step: 0, end_step: 25   │
+│ - start_str: 1.2, end_str: 0.6  │
+│ - curve_type: exponential_down  │
+│                                 │
+│ LoRA 2: environment_lora        │
+│ - start_step: 5, end_step: 30   │
+│ - start_str: 0.8, end_str: 0.8  │
+│ - curve_type: linear            │
+│                                 │
+│ LoRA 3: detail_enhancer         │
+│ - start_step: 15, end_step: 30  │
+│ - start_str: 0.0, end_str: 1.0  │
+│ - curve_type: ease_in           │
+└─────────────────────────────────┘
+```
+
+**Result:** Character establishes strongly early then maintains moderate influence, environment provides consistent context throughout, details ramp up in final stages for refinement.
+
+### Example 3: Composition Lock (ControlNet Strong Start, Fade Out)
+
+Lock in composition early with ControlNet, then let the model add details freely.
 
 **Workflow:**
 ```
@@ -196,15 +297,15 @@ Lock in composition early, then let the model add details freely.
 │ Load ControlNet │
 └────────┬────────┘
          │
-┌────────▼──────────────────┐
-│ Curved Timestep Keyframes │
+┌────────▼───────────────────┐
+│ Curved ControlNet Scheduler│
 │ - curve_type: strong_to_weak
 │ - start_percent: 0.0
 │ - end_percent: 0.4
 │ - start_strength: 1.0
 │ - end_strength: 0.1
 │ - curve_param: 3.0
-└────────┬──────────────────┘
+└────────┬───────────────────┘
          │
 ┌────────▼──────────────────┐
 │ Apply Advanced ControlNet │
@@ -214,7 +315,7 @@ Lock in composition early, then let the model add details freely.
 
 **Result:** ControlNet strongly guides early steps (structure), then releases control by 40% for creative details.
 
-### Example 2: Regional Control with Different Strengths
+### Example 4: Regional Control with Different Strengths
 
 Apply ControlNet more strongly to some areas than others.
 
@@ -244,7 +345,7 @@ Apply ControlNet more strongly to some areas than others.
 
 **Result:** Mountains follow reference closely (1.5x), flowers have creative freedom (0.4x), sky is moderately guided (0.8x).
 
-### Example 3: Regional Prompting with Different Descriptions
+### Example 5: Regional Prompting with Different Descriptions
 
 Use different text prompts for different regions.
 
@@ -278,131 +379,88 @@ Use different text prompts for different regions.
 
 **Result:** Mountains get "snowy peaks" style, flowers get "wildflowers" style, with base quality tags applied everywhere.
 
-### Example 4: Smooth Prompt Transitions with Interpolation
+### Example 6: Ultimate Combo - LoRA + ControlNet + Regional Prompts
 
-Create gradient transitions between different prompt regions.
-
-**Workflow:**
-```
-┌──────────────┐
-│ CLIP Model   │
-└──────┬───────┘
-       │
-┌──────▼────────────────────────────┐
-│ Regional Prompt Interpolation     │
-│ - base_positive: "photorealistic" │
-│                                   │
-│ - region_1_mask: sky              │
-│ - region_1_prompt: "blue sky"     │
-│                                   │
-│ - region_2_mask: horizon          │
-│ - region_2_prompt: "golden hour"  │
-│                                   │
-│ - region_3_mask: ground           │
-│ - region_3_prompt: "green grass"  │
-│                                   │
-│ - interpolation_steps: 8          │
-│ - transition_mode: smooth         │
-│ - gradient_direction: top_to_bottom│
-└───────────┬───────────────────────┘
-            │
-    ┌───────▼────────┐
-    │ KSampler       │
-    │ (positive)     │
-    └────────────────┘
-```
-
-**Result:** Smooth gradient transition from "blue sky" → "golden hour" → "green grass" with 8 intermediate blended prompts creating natural color/atmosphere transitions.
-
-### Example 5: Symmetrical Masking for Portraits
-
-Quickly create symmetrical masks for portraits or architecture.
+Combine LoRA scheduling, ControlNet scheduling, and regional prompts for maximum control.
 
 **Workflow:**
 ```
-┌──────────────────┐
-│ Load Image       │
-│ (portrait)       │
-└────────┬─────────┘
-         │
-┌────────▼─────────┐
-│ Mask Editor      │
-│ Paint left eye   │
-└────────┬─────────┘
-         │
-┌────────▼──────────────┐
-│ Mask Symmetry Tool    │
-│ - symmetry: horizontal│
-│ - blend_mode: max     │
-│ - blend_strength: 1.0 │
-└────────┬──────────────┘
-         │
-    Both eyes masked!
-```
-
-**Result:** Paint one eye, instantly get both eyes masked perfectly symmetrically.
-
-### Example 6: Ultimate Control (All Five Nodes Combined)
-
-Combine timestep curves + regional ControlNet strengths + regional prompts + interpolation + symmetry.
-
-**Workflow:**
-```
-                    ┌─────────────┐
-                    │ CLIP Model  │
-                    └──────┬──────┘
-                           │
-            ┌──────────────▼──────────────────────┐
-            │ Regional Prompt Interpolation       │
-            │ - Smooth transitions between prompts│
-            └──────────┬──────────────────────────┘
-                       │
-                       ├──────────────────────┐
-                       │                      │
-         ┌─────────────▼──────┐    ┌─────────▼──────────────┐
-         │ KSampler           │    │ Curved Timestep        │
-         │ (positive input)   │    │ Keyframes              │
-         └────────────────────┘    │ - Strength over time   │
-                                   └────────┬───────────────┘
-                                            │
-                  ┌─────────────────────────┤
-                  │                         │
-    ┌─────────────▼──────────────┐   ┌─────▼──────────────────┐
-    │ Multi-Mask Strength        │   │ Apply Advanced         │
-    │ Combiner                   │───│ ControlNet             │
-    │ - Different strengths      │   │ - timestep_kf          │
-    │   per region               │   │ - mask_optional        │
-    └────────────────────────────┘   └────────────────────────┘
-           ▲
+┌────────────────────────┐
+│ Curved LoRA Scheduler  │
+│ - Style LoRA fading    │
+│ - Detail LoRA ramping  │
+└──────────┬─────────────┘
            │
-    ┌──────┴──────────┐
-    │ Mask Symmetry   │
-    │ Tool (optional) │
-    │ - Mirror masks  │
-    └─────────────────┘
+    ┌──────▼──────┐
+    │ MODEL/CLIP  │
+    └──────┬──────┘
+           │
+┌──────────▼─────────────────────┐
+│ Regional Prompting             │
+│ - Different prompts per region │
+└──────────┬─────────────────────┘
+           │
+    ┌──────▼──────┐
+    │ KSampler    │
+    └──────┬──────┘
+           │
+┌──────────▼──────────────────────┐
+│ Curved ControlNet Scheduler     │
+│ - Composition lock early        │
+└──────────┬──────────────────────┘
+           │
+┌──────────▼──────────────────────┐
+│ Multi-Mask Strength Combiner    │
+│ - Different strengths per region│
+└──────────┬──────────────────────┘
+           │
+┌──────────▼──────────────────────┐
+│ Apply Advanced ControlNet       │
+└─────────────────────────────────┘
 ```
 
-**Result:** 
-- Smooth prompt transitions between regions (no harsh boundaries)
-- Different ControlNet strengths per region (strong, medium, weak)
-- Strength fades over time (starts strong, ends weak)
-- Symmetrical masks if needed (portraits, architecture)
-- Maximum creative control! 🎨
+**Result:** Complete control over style, composition, and content - with everything changing dynamically over time and space!
 
 ## 🎨 Practical Tips
 
-### Curve Selection Guide
+### LoRA Scheduling Tips
+
+**Curve Selection:**
+- `strong_to_weak`: Great for style LoRAs that should guide early then fade
+- `weak_to_strong`: Perfect for detail LoRAs that refine in later steps
+- `bell_curve`: Emphasize LoRA during middle structure-forming steps
+- `linear`: Simple, predictable transitions
+- `sine_wave`: Experimental - creates rhythmic variations
+
+**Strength Values:**
+- Start conservative: 0.8-1.2 for most LoRAs
+- Can go higher (1.5-2.0) for subtle LoRAs that need boosting
+- Negative values work for some LoRAs (style removal)
+- CLIP strength often works well at 1.0
+
+**Step Ranges:**
+- Early steps (0-10): Structure and composition
+- Mid steps (10-20): Main content and style
+- Late steps (20-30): Details and refinement
+- Overlap ranges for smooth transitions
+
+**Multi-LoRA Strategy:**
+- LoRA 1: Primary style/character (strong, covers most steps)
+- LoRA 2: Secondary effect (targeted timing)
+- LoRA 3: Details/enhancement (late steps only)
+
+### ControlNet Curve Selection
 
 **For Composition Control:**
-- `strong_to_weak` with `curve_param=2.5-4.0` → Lock composition early, release later
-- Set `end_percent=0.3-0.5` → Only control first 30-50% of generation
+- `strong_to_weak` with curve_param=2.5-4.0 → Lock composition early, release later
+- Set end_percent=0.3-0.5 → Only control first 30-50% of generation
 
 **For Detail Refinement:**
-- `weak_to_strong` with `curve_param=2.0` → Let model generate freely, then guide details
-- Set `start_percent=0.5` → Only apply ControlNet in second half
+- `weak_to_strong` with curve_param=2.0 → Let model generate freely, then guide details
+- Set start_percent=0.5 → Only apply ControlNet in second half
 
 **For Style Consistency:**
-- `bell_curve` with `curve_param=2.0-3.0` → Strong guidance during structure formation
+- `bell_curve` with curve_param=2.0-3.0 → Strong guidance during structure formation
 - Weak at start/end for creative freedom
 
 **For Experimental Effects:**
@@ -411,10 +469,10 @@ Combine timestep curves + regional ControlNet strengths + regional prompts + int
 
 ### Mask Painting Tips
 
-1. **Paint each region as a separate mask** - don't worry about opacity
-2. **Use full opacity** - the strength settings control the effect
-3. **Allow small overlaps** - use `blend_mode=max` to handle them
-4. **Test one region at a time** - easier to dial in individual strengths
+- Paint each region as a separate mask - don't worry about opacity
+- Use full opacity - the strength settings control the effect
+- Allow small overlaps - use blend_mode=max to handle them
+- Test one region at a time - easier to dial in individual strengths
 
 ### Regional Prompting Best Practices
 
@@ -463,61 +521,76 @@ Combine timestep curves + regional ControlNet strengths + regional prompts + int
 - `average`: For subtle, softer symmetry
 - `replace`: For hard-edge symmetrical masks
 
-**Pro Tip:** 
+**Pro Tip:**
 - Use `radial_4way` for mandala-like patterns
 - Combine with `invert_mirrored` for creative negative space effects
 
 ## 🐛 Troubleshooting
 
-**Issue:** Graph not showing
-- **Solution:** Make sure matplotlib is installed: `pip install matplotlib`
-- Set `show_graph=false` if you don't need it
+**Issue: Graph not showing**
+- Solution: Make sure matplotlib is installed: `pip install matplotlib`
+- Set show_graph=false if you don't need it
 
-**Issue:** Masks not affecting output
-- **Solution:** 
+**Issue: LoRA not affecting output**
+- Solution:
+  - Verify LoRA file exists in ComfyUI/models/loras/
+  - Check that start_step < end_step
+  - Try increasing strength values (1.2-1.5)
+  - Ensure num_steps matches your sampler
+  - Enable print_schedule=true to see applied weights
+
+**Issue: Multiple LoRAs conflicting**
+- Solution:
+  - Check strength values aren't too high (try 0.8-1.2 range)
+  - Stagger step ranges so they don't all peak at once
+  - Use different curve types for variety
+  - Start with 2 LoRAs before adding a third
+
+**Issue: Masks not affecting output**
+- Solution:
   - Check that masks are actually painted (not empty)
   - Verify mask is connected to correct input
   - Try increasing strength values
-  - Enable `show_debug=true` to see what the node is processing
+  - Enable show_debug=true to see what the node is processing
 
-**Issue:** Regional prompts bleeding into each other
-- **Solution:**
+**Issue: Regional prompts bleeding into each other**
+- Solution:
   - Make sure masks don't overlap (or use interpolation node for intentional blending)
   - Use more specific prompts
   - Adjust region strength values
 
-**Issue:** Symmetry creating unexpected results
-- **Solution:**
+**Issue: Symmetry creating unexpected results**
+- Solution:
   - Check that your mask doesn't already cover both sides
   - Try different blend modes
-  - Reduce `blend_strength` for subtler effect
-  - Use `show_debug=true` to see what's happening
+  - Reduce blend_strength for subtler effect
+  - Use show_debug=true to see what's happening
 
-**Issue:** Interpolation not visible
-- **Solution:**
-  - Increase `interpolation_steps` (try 10-15)
-  - Use `transition_mode=smooth` for more obvious gradients
+**Issue: Interpolation not visible**
+- Solution:
+  - Increase interpolation_steps (try 10-15)
+  - Use transition_mode=smooth for more obvious gradients
   - Check that masks are positioned to allow transition zones
-  - Enable `show_debug=true` to verify regions are being created
+  - Enable show_debug=true to verify regions are being created
 
-**Issue:** ControlNet effect too strong/weak everywhere
-- **Solution:**
-  - Adjust `base_strength` in Multi-Mask Combiner
-  - Check `strength` value on Apply Advanced ControlNet node
-  - Verify `start_strength` and `end_strength` values in Curved Timestep Keyframes
+**Issue: ControlNet effect too strong/weak everywhere**
+- Solution:
+  - Adjust base_strength in Multi-Mask Combiner
+  - Check strength value on Apply Advanced ControlNet node
+  - Verify start_strength and end_strength values in Curved ControlNet Scheduler
 
 ## 📋 Requirements
 
 - ComfyUI
-- [ComfyUI-Advanced-ControlNet](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet)
-- Python packages: `matplotlib`, `pillow`, `numpy`, `torch`
+- ComfyUI-Advanced-ControlNet
+- Python packages: matplotlib, pillow, numpy, torch
 
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to:
 - Report bugs
-- Suggest new curve types
-- Request features
+- Suggest new curve types or features
+- Request improvements
 - Submit pull requests
 
 ## 📄 License
@@ -530,6 +603,6 @@ Created with assistance from Claude (Anthropic). Special thanks to the ComfyUI a
 
 ---
 
-**Enjoy creating with precise control! 🎨✨**
+**Enjoy creating with precise control over every aspect of your generation!** 🎨✨
 
 If you find this useful, consider starring the repo and sharing your creations!
