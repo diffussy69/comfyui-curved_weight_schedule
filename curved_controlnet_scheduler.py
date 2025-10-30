@@ -76,23 +76,22 @@ class CurvedControlNetScheduler:
                     "step": 0.01,
                     "tooltip": "ControlNet strength at end_percent"
                 }),
-                "curve_type": (["strong_to_weak", "weak_to_strong", "linear", "ease_in", 
-                               "ease_out", "ease_in_out", "sine_wave", "bell_curve", 
-                               "reverse_bell", "exponential_up", "exponential_down", 
-                               "bounce", "custom_bezier"],),
+                "curve_type": (["linear", "ease_in", "ease_out", "ease_in_out", 
+                               "sine_wave", "bell_curve", "reverse_bell", 
+                               "exponential", "bounce", "custom_bezier"],),
                 "curve_param": ("FLOAT", {
                     "default": 2.0,
                     "min": 0.1,
                     "max": 10.0,
                     "step": 0.1,
-                    "tooltip": "Curve steepness: higher = faster transition, lower = slower transition"
+                    "tooltip": "Curve steepness: higher = more extreme curve"
                 }),
             },
             "optional": {
                 "prev_timestep_kf": ("TIMESTEP_KEYFRAME",),
                 "invert_curve": ("BOOLEAN", {
                     "default": False,
-                    "tooltip": "Invert the curve"
+                    "tooltip": "Invert the curve shape"
                 }),
                 "print_keyframes": ("BOOLEAN", {
                     "default": False,
@@ -127,45 +126,55 @@ class CurvedControlNetScheduler:
             # Create normalized array from 0 to 1
             t = np.linspace(0, 1, num_keyframes)
             
-            # Generate curve based on type
-            if curve_type == "strong_to_weak":
-                curve = 1 - (t ** (1 / curve_param))
-            elif curve_type == "weak_to_strong":
-                curve = t ** (1 / curve_param)
-            elif curve_type == "linear":
+            # Generate NORMALIZED curve (always 0 to 1, representing progress)
+            # The curve shape determines HOW we interpolate, not the direction
+            if curve_type == "linear":
                 curve = t
             elif curve_type == "ease_in":
+                # Slow start, fast end
                 curve = t ** curve_param
             elif curve_type == "ease_out":
+                # Fast start, slow end
                 curve = 1 - (1 - t) ** curve_param
             elif curve_type == "ease_in_out":
+                # Slow start and end, fast middle
                 curve = np.where(t < 0.5, 
                                2 ** (curve_param - 1) * t ** curve_param,
                                1 - (-2 * t + 2) ** curve_param / 2)
             elif curve_type == "sine_wave":
+                # Oscillating wave
                 curve = (np.sin(t * curve_param * 2 * np.pi) + 1) / 2
             elif curve_type == "bell_curve":
-                curve = np.exp(-((t - 0.5) ** 2) / (2 * (0.15 / curve_param) ** 2))
+                # Peak in the middle
+                center = 0.5
+                width = 0.15 / curve_param
+                curve = np.exp(-((t - center) ** 2) / (2 * width ** 2))
             elif curve_type == "reverse_bell":
-                bell = np.exp(-((t - 0.5) ** 2) / (2 * (0.15 / curve_param) ** 2))
+                # Valley in the middle (inverted bell)
+                center = 0.5
+                width = 0.15 / curve_param
+                bell = np.exp(-((t - center) ** 2) / (2 * width ** 2))
                 curve = 1 - bell
-            elif curve_type == "exponential_up":
+            elif curve_type == "exponential":
+                # Exponential growth
                 curve = (np.exp(curve_param * t) - 1) / (np.exp(curve_param) - 1)
-            elif curve_type == "exponential_down":
-                curve = (np.exp(curve_param * (1 - t)) - 1) / (np.exp(curve_param) - 1)
             elif curve_type == "bounce":
+                # Bouncing abs sine wave
                 curve = np.abs(np.sin(t * curve_param * np.pi))
             elif curve_type == "custom_bezier":
-                curve = 3 * (1 - t) ** 2 * t * curve_param / 10 + 3 * (1 - t) * t ** 2 * (1 - curve_param / 10) + t ** 3
+                # Custom cubic bezier curve
+                p1 = curve_param / 10
+                p2 = 1 - curve_param / 10
+                curve = 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t ** 2 * p2 + t ** 3
             else:
                 curve = t
             
-            # Invert curve if requested
+            # Invert curve if requested (flips the shape)
             if invert_curve:
                 curve = 1 - curve
             
-            # FIXED: Map curve values to strength range correctly
-            # This now properly interpolates from start_strength to end_strength
+            # Now apply the curve to interpolate between start_strength and end_strength
+            # curve goes from 0 to 1, so this correctly interpolates
             strengths = start_strength + (end_strength - start_strength) * curve
             
             # Map to percent range
