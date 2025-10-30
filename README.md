@@ -25,7 +25,7 @@ cd ComfyUI/custom_nodes/
 
 2. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/comfyui-curved_weight_schedule
+git clone https://github.com/diffussy69/comfyui-curved_weight_schedule
 ```
 
 3. Install dependencies (if not already installed):
