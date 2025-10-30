@@ -5,7 +5,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 ## 🌟 Features
 
 ### ControlNet Scheduling
-- **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with 13 different curve types
+- **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with multiple curve types
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
@@ -49,25 +49,71 @@ Control ControlNet strength across generation steps using mathematical curves.
 **Key Parameters:**
 - `num_keyframes`: Number of control points (2-100)
 - `start_percent` / `end_percent`: When to start/stop the curve (0.0-1.0)
-- `start_strength` / `end_strength`: Strength values at start and end
+- `start_strength` / `end_strength`: Strength values at start and end (YOU control the direction)
 - `curve_type`: Shape of the strength transition
-- `curve_param`: Controls transition speed/steepness
+- `curve_param`: Controls transition speed/steepness (higher = more extreme)
+- `invert_curve`: Flip the curve shape
 
 **Available Curve Types:**
-- `strong_to_weak`: Start with high control, gradually release
-- `weak_to_strong`: Build up control over time
 - `linear`: Straight line transition
-- `ease_in` / `ease_out` / `ease_in_out`: Smooth acceleration curves
-- `bell_curve`: Strong in middle, weak at ends
-- `reverse_bell`: Weak in middle, strong at ends
-- `exponential_up` / `exponential_down`: Dramatic transitions
+- `ease_in`: Slow start, fast end (accelerating)
+- `ease_out`: Fast start, slow end (decelerating)
+- `ease_in_out`: Slow start and end, fast middle (smooth S-curve)
 - `sine_wave`: Oscillating control (experimental)
+- `bell_curve`: Peak in middle, low at edges
+- `reverse_bell`: Low in middle, high at edges
+- `exponential`: Dramatic exponential curve
 - `bounce`: Bouncing effect
 - `custom_bezier`: Customizable bezier curve
+
+**How Curves Work:**
+- All curves represent the **shape** of interpolation from 0→1
+- The `start_strength` and `end_strength` parameters control the **direction** (high→low or low→high)
+- For example:
+  - `start_strength=1.0, end_strength=0.0` with `linear` = straight line from 1.0 down to 0.0
+  - `start_strength=0.0, end_strength=1.0` with `ease_in` = slowly ramps up from 0.0 to 1.0
+  - `start_strength=0.5, end_strength=1.5` with `exponential` = exponentially grows from 0.5 to 1.5
 
 **Outputs:**
 - `TIMESTEP_KF`: Connect to Apply Advanced ControlNet's timestep_kf input
 - `curve_graph`: Visual preview (connect to Preview Image)
+
+### ⚠️ IMPORTANT: Advanced ControlNet Configuration
+
+**The Curved ControlNet Scheduler node works WITH Advanced ControlNet settings, not instead of them.**
+
+Your timestep keyframes are **multiplied** by the Advanced ControlNet base settings. For the scheduler to work as expected:
+
+**Required Settings on "Apply Advanced ControlNet" node:**
+- `strength`: **1.00** (acts as multiplier - set to 1.0 to use your keyframe values directly)
+- `start_percent`: **0.000** (your scheduler controls the timing)
+- `end_percent`: **1.000** (allow full range - your scheduler controls when it's active)
+
+**Why This Matters:**
+- If Advanced ControlNet `strength` = 0.5 and your keyframe = 1.0, actual strength = 0.5
+- If Advanced ControlNet `end_percent` = 0.5, your keyframes after 50% won't apply
+- Setting these to 1.0/0.0/1.0 lets your scheduler have full control
+
+**Example Setup:**
+```
+┌────────────────────────┐
+│ Curved ControlNet      │
+│ Scheduler              │
+│ - start_strength: 1.0  │
+│ - end_strength: 0.2    │
+│ - curve_type: ease_out │
+└──────────┬─────────────┘
+           │ (TIMESTEP_KF output)
+           │
+┌──────────▼─────────────┐
+│ Apply Advanced         │
+│ ControlNet             │
+│ ⚠️ IMPORTANT SETTINGS: │
+│ - strength: 1.00       │ ← Must be 1.0!
+│ - start_percent: 0.000 │ ← Must be 0.0!
+│ - end_percent: 1.000   │ ← Must be 1.0!
+└────────────────────────┘
+```
 
 ### 2. Multi-Mask Strength Combiner
 
@@ -165,35 +211,64 @@ Mirror and flip masks across different axes for symmetrical compositions.
 
 ## 💡 Usage Examples
 
-### Example 1: Composition Lock (ControlNet Strong Start, Fade Out)
+### Example 1: Composition Lock (Strong Start, Fade Out)
 
 Lock in composition early with ControlNet, then let the model add details freely.
 
 **Workflow:**
 ```
-┌─────────────────┐
+┌──────────────────┐
 │ Load ControlNet │
-└────────┬────────┘
+└────────┬─────────┘
          │
-┌────────▼───────────────────┐
-│ Curved ControlNet Scheduler│
-│ - curve_type: strong_to_weak
-│ - start_percent: 0.0
-│ - end_percent: 0.4
-│ - start_strength: 1.0
-│ - end_strength: 0.1
-│ - curve_param: 3.0
-└────────┬───────────────────┘
+┌────────▼───────────────────────┐
+│ Curved ControlNet Scheduler    │
+│ - start_strength: 1.0          │
+│ - end_strength: 0.1            │
+│ - start_percent: 0.0           │
+│ - end_percent: 0.4             │
+│ - curve_type: ease_out         │
+│ - curve_param: 3.0             │
+└────────┬───────────────────────┘
          │
-┌────────▼──────────────────┐
-│ Apply Advanced ControlNet │
-│ (timestep_kf input)       │
-└───────────────────────────┘
+┌────────▼───────────────────────┐
+│ Apply Advanced ControlNet      │
+│ ⚠️ CRITICAL SETTINGS:          │
+│ - strength: 1.00               │
+│ - start_percent: 0.000         │
+│ - end_percent: 1.000           │
+└────────────────────────────────┘
 ```
 
 **Result:** ControlNet strongly guides early steps (structure), then releases control by 40% for creative details.
 
-### Example 2: Regional Control with Different Strengths
+### Example 2: Detail Refinement (Weak Start, Strong End)
+
+Let the model generate freely at first, then guide details toward the end.
+
+**Workflow:**
+```
+┌────────────────────────────────┐
+│ Curved ControlNet Scheduler    │
+│ - start_strength: 0.0          │
+│ - end_strength: 1.2            │
+│ - start_percent: 0.5           │
+│ - end_percent: 1.0             │
+│ - curve_type: ease_in          │
+│ - curve_param: 2.5             │
+└────────┬───────────────────────┘
+         │
+┌────────▼───────────────────────┐
+│ Apply Advanced ControlNet      │
+│ - strength: 1.00               │
+│ - start_percent: 0.000         │
+│ - end_percent: 1.000           │
+└────────────────────────────────┘
+```
+
+**Result:** First 50% is free generation, then ControlNet gradually takes over to refine details.
+
+### Example 3: Regional Control with Different Strengths
 
 Apply ControlNet more strongly to some areas than others.
 
@@ -206,24 +281,25 @@ Apply ControlNet more strongly to some areas than others.
        │                    │                    │
        └────────────────────┼────────────────────┘
                             │
-                ┌───────────▼──────────────┐
-                │ Multi-Mask Strength      │
-                │ Combiner                 │
-                │ - mask_1_strength: 1.5   │  (mountains - high)
-                │ - mask_2_strength: 0.4   │  (flowers - low)
-                │ - mask_3_strength: 0.8   │  (sky - medium)
-                │ - blend_mode: max        │
-                └───────────┬──────────────┘
+                ┌───────────▼──────────────────┐
+                │ Multi-Mask Strength          │
+                │ Combiner                     │
+                │ - mask_1_strength: 1.5       │  (mountains - high)
+                │ - mask_2_strength: 0.4       │  (flowers - low)
+                │ - mask_3_strength: 0.8       │  (sky - medium)
+                │ - blend_mode: max            │
+                └───────────┬──────────────────┘
                             │
-                ┌───────────▼──────────────┐
-                │ Apply Advanced ControlNet│
-                │ (mask_optional input)    │
-                └──────────────────────────┘
+                ┌───────────▼──────────────────┐
+                │ Apply Advanced ControlNet    │
+                │ (mask_optional input)        │
+                │ - strength: 1.00             │
+                └──────────────────────────────┘
 ```
 
 **Result:** Mountains follow reference closely (1.5x), flowers have creative freedom (0.4x), sky is moderately guided (0.8x).
 
-### Example 3: Regional Prompting with Different Descriptions
+### Example 4: Regional Prompting with Different Descriptions
 
 Use different text prompts for different regions.
 
@@ -233,91 +309,66 @@ Use different text prompts for different regions.
 │ CLIP Model   │
 └──────┬───────┘
        │
-┌──────▼────────────────────────┐
-│ Regional Prompting            │
-│ - base_positive:              │
-│   "masterpiece, photorealistic"│
-│                               │
-│ - region_1_mask: mountains    │
-│ - region_1_prompt:            │
-│   "snowy peaks, dramatic"     │
-│ - region_1_strength: 1.2      │
-│                               │
-│ - region_2_mask: flowers      │
-│ - region_2_prompt:            │
-│   "wildflowers, soft bokeh"   │
-│ - region_2_strength: 1.0      │
-└───────────┬───────────────────┘
-            │
-    ┌───────▼────────┐
-    │ KSampler       │
-    │ (positive)     │
-    └────────────────┘
+┌──────▼──────────────────────────┐
+│ Regional Prompting              │
+│ - base_positive:                │
+│   "masterpiece, photorealistic" │
+│                                 │
+│ - region_1_mask: mountains      │
+│ - region_1_prompt:              │
+│   "snowy peaks, dramatic"       │
+│ - region_1_strength: 1.2        │
+│                                 │
+│ - region_2_mask: flowers        │
+│ - region_2_prompt:              │
+│   "wildflowers, soft bokeh"     │
+│ - region_2_strength: 1.0        │
+└────────────┬────────────────────┘
+             │
+     ┌───────▼────────┐
+     │ KSampler       │
+     │ (positive)     │
+     └────────────────┘
 ```
 
 **Result:** Mountains get "snowy peaks" style, flowers get "wildflowers" style, with base quality tags applied everywhere.
-
-### Example 4: Ultimate Combo - ControlNet + Regional Prompts
-
-Combine ControlNet scheduling and regional prompts for maximum control.
-
-**Workflow:**
-```
-┌────────────────────────┐
-│ Curved LoRA Scheduler  │
-│ - Style LoRA fading    │
-│ - Detail LoRA ramping  │
-└──────────┬─────────────┘
-           │
-    ┌──────▼──────┐
-    │ MODEL/CLIP  │
-    └──────┬──────┘
-           │
-┌──────────▼─────────────────────┐
-│ Regional Prompting             │
-│ - Different prompts per region │
-└──────────┬─────────────────────┘
-           │
-    ┌──────▼──────┐
-    │ KSampler    │
-    └──────┬──────┘
-           │
-┌──────────▼──────────────────────┐
-│ Curved ControlNet Scheduler     │
-│ - Composition lock early        │
-└──────────┬──────────────────────┘
-           │
-┌──────────▼──────────────────────┐
-│ Multi-Mask Strength Combiner    │
-│ - Different strengths per region│
-└──────────┬──────────────────────┘
-           │
-┌──────────▼──────────────────────┐
-│ Apply Advanced ControlNet       │
-└─────────────────────────────────┘
-```
-
-**Result:** Complete control over style, composition, and content - with everything changing dynamically over time and space!
 
 ## 🎨 Practical Tips
 
 ### ControlNet Curve Selection
 
 **For Composition Control:**
-- `strong_to_weak` with curve_param=2.5-4.0 → Lock composition early, release later
+- `ease_out` with curve_param=2.5-4.0 → Fast transition from strong to weak control
+- Set `start_strength=1.0, end_strength=0.1` → Lock composition early, release later
 - Set end_percent=0.3-0.5 → Only control first 30-50% of generation
 
 **For Detail Refinement:**
-- `weak_to_strong` with curve_param=2.0 → Let model generate freely, then guide details
+- `ease_in` with curve_param=2.0 → Slowly builds up control
+- Set `start_strength=0.0, end_strength=1.0` → Let model generate freely, then guide details
 - Set start_percent=0.5 → Only apply ControlNet in second half
 
 **For Style Consistency:**
-- `bell_curve` with curve_param=2.0-3.0 → Strong guidance during structure formation
-- Weak at start/end for creative freedom
+- `bell_curve` with curve_param=2.0-3.0 → Strong guidance during middle (structure formation)
+- Set `start_strength=0.3, end_strength=0.3` → Weak at start/end for creative freedom
 
 **For Experimental Effects:**
 - `sine_wave` → Oscillating control (wild results!)
 - `bounce` → Rhythmic control variations
+- Use `invert_curve` to flip any curve's behavior
+
+### Understanding Curve Direction
+
+**The curve type controls the SHAPE, your strength values control the DIRECTION:**
+
+Example with `ease_in` (slow start, fast end):
+- `start=1.0, end=0.0` → Stays at 1.0 for a while, then drops quickly to 0.0
+- `start=0.0, end=1.0` → Stays at 0.0 for a while, then rises quickly to 1.0
+
+Example with `exponential` (dramatic growth):
+- `start=0.2, end=1.5` → Slowly starts at 0.2, then dramatically shoots up to 1.5
+- `start=1.5, end=0.2` → Stays high at 1.5, then drops dramatically to 0.2
+
+**Pro Tip:** Use the graph preview to verify your curve looks correct before generating!
 
 ### Mask Painting Tips
 
@@ -377,7 +428,18 @@ Combine ControlNet scheduling and regional prompts for maximum control.
 - Use `radial_4way` for mandala-like patterns
 - Combine with `invert_mirrored` for creative negative space effects
 
-## 🐛 Troubleshooting
+## 🛠 Troubleshooting
+
+**Issue: ControlNet not working at all / no effect**
+- ⚠️ **Solution**: Check your Advanced ControlNet node settings!
+  - Set `strength` to **1.00**
+  - Set `start_percent` to **0.000**
+  - Set `end_percent` to **1.000**
+  - These settings must be correct for the scheduler to work!
+
+**Issue: Curve going in wrong direction**
+- Solution: The curve shape is correct, but swap your `start_strength` and `end_strength` values
+- Remember: Curve types control SHAPE, not direction
 
 **Issue: Graph not showing**
 - Solution: Make sure matplotlib is installed: `pip install matplotlib`
@@ -388,7 +450,19 @@ Combine ControlNet scheduling and regional prompts for maximum control.
   - Check that masks are actually painted (not empty)
   - Verify mask is connected to correct input
   - Try increasing strength values
-  - Enable show_debug=true to see what the node is processing
+  - Verify Advanced ControlNet base strength is 1.0
+
+**Issue: Effect too weak everywhere**
+- Solution:
+  - Check Advanced ControlNet `strength` setting (should be 1.0)
+  - Increase `start_strength` and `end_strength` values in scheduler
+  - Increase `base_strength` in Multi-Mask Strength Combiner
+
+**Issue: Effect too strong everywhere**
+- Solution:
+  - Decrease `start_strength` and `end_strength` values
+  - Decrease individual mask strengths in Multi-Mask Combiner
+  - Check that Advanced ControlNet strength isn't multiplying your values
 
 **Issue: Regional prompts bleeding into each other**
 - Solution:
@@ -401,20 +475,12 @@ Combine ControlNet scheduling and regional prompts for maximum control.
   - Check that your mask doesn't already cover both sides
   - Try different blend modes
   - Reduce blend_strength for subtler effect
-  - Use show_debug=true to see what's happening
 
 **Issue: Interpolation not visible**
 - Solution:
   - Increase interpolation_steps (try 10-15)
   - Use transition_mode=smooth for more obvious gradients
   - Check that masks are positioned to allow transition zones
-  - Enable show_debug=true to verify regions are being created
-
-**Issue: ControlNet effect too strong/weak everywhere**
-- Solution:
-  - Adjust base_strength in Multi-Mask Combiner
-  - Check strength value on Apply Advanced ControlNet node
-  - Verify start_strength and end_strength values in Curved ControlNet Scheduler
 
 ## 📋 Requirements
 
