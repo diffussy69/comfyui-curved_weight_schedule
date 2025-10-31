@@ -27,18 +27,19 @@ cd ComfyUI/custom_nodes/
 ```bash
 git clone https://github.com/diffussy69/comfyui-curved_weight_schedule
 ```
+
 3. Clone Kosinkadink's repository(Advanced ControlNet)
 ```bash
 git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
 ```
   
 
-5. Install dependencies (if not already installed):
+4. Install dependencies (if not already installed):
 ```bash
 pip install matplotlib pillow numpy torch
 ```
 
-4. Restart ComfyUI
+5. Restart ComfyUI
 
 The nodes will appear in:
 - `conditioning/controlnet` → Curved ControlNet Scheduler
