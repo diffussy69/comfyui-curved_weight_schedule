@@ -69,6 +69,19 @@ Control ControlNet strength across generation steps using mathematical curves.
 - <img width="1166" height="671" alt="image" src="https://github.com/user-attachments/assets/168fda8c-736d-453e-b72b-e70ec85cbe22" />
 - <img width="1167" height="666" alt="image" src="https://github.com/user-attachments/assets/0bc85089-a58f-451c-a45e-defb4e17e365" />
 - <img width="1185" height="692" alt="image" src="https://github.com/user-attachments/assets/1e9287f4-44a5-423e-b342-2ce4dcba9083" />
+- <img width="1182" height="690" alt="image" src="https://github.com/user-attachments/assets/0ac60184-7a2c-4f75-828a-c0f807dc5e8e" />
+- <img width="1134" height="685" alt="image" src="https://github.com/user-attachments/assets/1a0df3c3-9c2e-41bd-9bbf-c9ceb3d53587" />
+- <img width="1184" height="674" alt="image" src="https://github.com/user-attachments/assets/7076adad-9060-4294-8034-a53d4c815e81" />
+- <img width="1140" height="679" alt="image" src="https://github.com/user-attachments/assets/e8603ce9-f6fa-42e8-91f0-17c2419b7d17" />
+- <img width="1200" height="686" alt="image" src="https://github.com/user-attachments/assets/495ac8fb-5778-4257-b89f-ab82a8043196" />
+- <img width="1178" height="669" alt="image" src="https://github.com/user-attachments/assets/3e5a6831-2f31-47b8-9320-6e1762bca9a8" />
+
+
+
+
+
+
+
 
 
 - 
