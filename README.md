@@ -59,6 +59,8 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `curve_type`: Shape of the strength transition
 - `curve_param`: Controls transition speed/steepness (higher = more extreme)
 - `invert_curve`: Flip the curve shape
+- <img width="1029" height="752" alt="image" src="https://github.com/user-attachments/assets/49c76b2e-44a7-4669-aa93-aabc4aff3c10" />
+
 
 
 **Available Curve Types:**
