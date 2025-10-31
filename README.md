@@ -25,7 +25,7 @@ cd ComfyUI/custom_nodes/
 
 2. Clone my repository:
 ```bash
-git clone https://github.com/diffussy69/comfyui-curved_weight_schedule
+git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
 ```
 
 3. Clone Kosinkadink's repository(Advanced ControlNet)
