@@ -23,12 +23,17 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 cd ComfyUI/custom_nodes/
 ```
 
-2. Clone this repository:
+2. Clone my repository:
 ```bash
 git clone https://github.com/diffussy69/comfyui-curved_weight_schedule
 ```
+3. Clone Kosinkadink's repository(Advanced ControlNet)
+```bash
+git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
+```
+  
 
-3. Install dependencies (if not already installed):
+5. Install dependencies (if not already installed):
 ```bash
 pip install matplotlib pillow numpy torch
 ```
