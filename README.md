@@ -53,7 +53,6 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `curve_type`: Shape of the strength transition
 - `curve_param`: Controls transition speed/steepness (higher = more extreme)
 - `invert_curve`: Flip the curve shape
-- <img width="1166" height="671" alt="image" src="https://github.com/user-attachments/assets/854349e7-26e0-4c7b-b62d-7f1c8ac531ff" />
 
 
 **Available Curve Types:**
@@ -67,6 +66,14 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `exponential`: Dramatic exponential curve
 - `bounce`: Bouncing effect
 - `custom_bezier`: Customizable bezier curve
+- <img width="1166" height="671" alt="image" src="https://github.com/user-attachments/assets/168fda8c-736d-453e-b72b-e70ec85cbe22" />
+- <img width="1167" height="666" alt="image" src="https://github.com/user-attachments/assets/0bc85089-a58f-451c-a45e-defb4e17e365" />
+- <img width="1185" height="692" alt="image" src="https://github.com/user-attachments/assets/1e9287f4-44a5-423e-b342-2ce4dcba9083" />
+
+
+- 
+
+
 
 **How Curves Work:**
 - All curves represent the **shape** of interpolation from 0→1
