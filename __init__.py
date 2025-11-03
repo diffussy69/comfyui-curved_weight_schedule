@@ -1,4 +1,5 @@
 from .curved_controlnet_scheduler import NODE_CLASS_MAPPINGS as controlnet_scheduler_mappings, NODE_DISPLAY_NAME_MAPPINGS as controlnet_scheduler_display
+from .advanced_curved_controlnet_scheduler import NODE_CLASS_MAPPINGS as advanced_controlnet_scheduler_mappings, NODE_DISPLAY_NAME_MAPPINGS as advanced_controlnet_scheduler_display
 from .multi_mask_combiner import NODE_CLASS_MAPPINGS as combiner_mappings, NODE_DISPLAY_NAME_MAPPINGS as combiner_display
 from .regional_prompting import NODE_CLASS_MAPPINGS as regional_mappings, NODE_DISPLAY_NAME_MAPPINGS as regional_display
 from .mask_symmetry_tool import NODE_CLASS_MAPPINGS as symmetry_mappings, NODE_DISPLAY_NAME_MAPPINGS as symmetry_display
@@ -7,6 +8,7 @@ from .auto_mask import NODE_CLASS_MAPPINGS as auto_mask_mappings, NODE_DISPLAY_N
 
 NODE_CLASS_MAPPINGS = {
     **controlnet_scheduler_mappings, 
+    **advanced_controlnet_scheduler_mappings,
     **combiner_mappings, 
     **regional_mappings, 
     **symmetry_mappings, 
@@ -15,7 +17,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    **controlnet_scheduler_display, 
+    **controlnet_scheduler_display,
+    **advanced_controlnet_scheduler_display,
     **combiner_display, 
     **regional_display, 
     **symmetry_display, 
