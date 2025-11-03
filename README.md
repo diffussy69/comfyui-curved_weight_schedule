@@ -6,6 +6,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 
 ### ControlNet Scheduling
 - **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with multiple curve types
+- **Advanced Curved ControlNet Scheduler**: NEW! Feature-rich version with presets, custom formulas, curve blending, and more
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
@@ -28,11 +29,10 @@ cd ComfyUI/custom_nodes/
 git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
 ```
 
-3. Clone Kosinkadink's repository(Advanced ControlNet)
+3. Clone Kosinkadink's repository (Advanced ControlNet):
 ```bash
 git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
 ```
-  
 
 4. Install dependencies (if not already installed):
 ```bash
@@ -42,13 +42,13 @@ pip install matplotlib pillow numpy torch
 5. Restart ComfyUI
 
 The nodes will appear in:
-- `conditioning/controlnet` → Curved ControlNet Scheduler
+- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler
 - `mask` → Multi-Mask Strength Combiner, Mask Symmetry Tool
 - `conditioning` → Regional Prompting, Regional Prompt Interpolation
 
 ## 🎯 Node Overview
 
-### 1. Curved ControlNet Scheduler
+### 1. Curved ControlNet Scheduler (Original)
 
 Control ControlNet strength across generation steps using mathematical curves.
 
@@ -61,8 +61,6 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `invert_curve`: Flip the curve shape
 - <img width="1029" height="752" alt="image" src="https://github.com/user-attachments/assets/49c76b2e-44a7-4669-aa93-aabc4aff3c10" />
 
-
-
 **Available Curve Types:**
 - `linear`: Straight line transition
 - `ease_in`: Slow start, fast end (accelerating)
@@ -74,78 +72,83 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `exponential`: Dramatic exponential curve
 - `bounce`: Bouncing effect
 - `custom_bezier`: Customizable bezier curve
-- <img width="1166" height="671" alt="image" src="https://github.com/user-attachments/assets/168fda8c-736d-453e-b72b-e70ec85cbe22" />
-- <img width="1167" height="666" alt="image" src="https://github.com/user-attachments/assets/0bc85089-a58f-451c-a45e-defb4e17e365" />
-- <img width="1185" height="692" alt="image" src="https://github.com/user-attachments/assets/1e9287f4-44a5-423e-b342-2ce4dcba9083" />
-- <img width="1182" height="690" alt="image" src="https://github.com/user-attachments/assets/0ac60184-7a2c-4f75-828a-c0f807dc5e8e" />
-- <img width="1134" height="685" alt="image" src="https://github.com/user-attachments/assets/1a0df3c3-9c2e-41bd-9bbf-c9ceb3d53587" />
-- <img width="1184" height="674" alt="image" src="https://github.com/user-attachments/assets/7076adad-9060-4294-8034-a53d4c815e81" />
-- <img width="1140" height="679" alt="image" src="https://github.com/user-attachments/assets/e8603ce9-f6fa-42e8-91f0-17c2419b7d17" />
-- <img width="1200" height="686" alt="image" src="https://github.com/user-attachments/assets/495ac8fb-5778-4257-b89f-ab82a8043196" />
-- <img width="1178" height="669" alt="image" src="https://github.com/user-attachments/assets/3e5a6831-2f31-47b8-9320-6e1762bca9a8" />
-
-
-
-
-
-
-
-
-
-- 
-
-
-
-**How Curves Work:**
-- All curves represent the **shape** of interpolation from 0→1
-- The `start_strength` and `end_strength` parameters control the **direction** (high→low or low→high)
-- For example:
-  - `start_strength=1.0, end_strength=0.0` with `linear` = straight line from 1.0 down to 0.0
-  - `start_strength=0.0, end_strength=1.0` with `ease_in` = slowly ramps up from 0.0 to 1.0
-  - `start_strength=0.5, end_strength=1.5` with `exponential` = exponentially grows from 0.5 to 1.5
 
 **Outputs:**
 - `TIMESTEP_KF`: Connect to Apply Advanced ControlNet's timestep_kf input
 - `curve_graph`: Visual preview (connect to Preview Image)
 
-### ⚠️ IMPORTANT: Advanced ControlNet Configuration
+### 2. Advanced Curved ControlNet Scheduler (NEW!)
 
-**The Curved ControlNet Scheduler node works WITH Advanced ControlNet settings, not instead of them.**
+Enhanced version with powerful new features for maximum control and flexibility.
 
-Your timestep keyframes are **multiplied** by the Advanced ControlNet base settings. For the scheduler to work as expected:
+**All Original Features Plus:**
 
-**Required Settings on "Apply Advanced ControlNet" node:**
-- `strength`: **1.00** (acts as multiplier - set to 1.0 to use your keyframe values directly)
-- `start_percent`: **0.000** (your scheduler controls the timing)
-- `end_percent`: **1.000** (allow full range - your scheduler controls when it's active)
+#### 🎨 Preset System
+- **9 Pre-configured Presets**: Quick one-click setups
+  - `Fade Out`: Strong start → weak end (composition lock)
+  - `Fade In`: Weak start → strong end (detail refinement)
+  - `Peak Control`: Peaks in middle (bell curve strength)
+  - `Valley Control`: Strong edges, weak middle
+  - `Strong Start+End`: Bookend control
+  - `Oscillating`: Wave pattern control
+  - `Exponential Decay`: Dramatic fade
+  - `Smooth Transition`: Gentle S-curve
+  - `Custom`: Manual configuration
 
-**Why This Matters:**
-- If Advanced ControlNet `strength` = 0.5 and your keyframe = 1.0, actual strength = 0.5
-- If Advanced ControlNet `end_percent` = 0.5, your keyframes after 50% won't apply
-- Setting these to 1.0/0.0/1.0 lets your scheduler have full control
+#### 🔢 Advanced Easing Functions
+- **Professional animation easing curves**:
+  - `ease_in/out/in_out_quad` (quadratic)
+  - `ease_in/out/in_out_cubic` (cubic)
+  - `ease_in/out/in_out_quart` (quartic)
+- More precise control over acceleration/deceleration
 
-**Example Setup:**
-```
-┌────────────────────────┐
-│ Curved ControlNet      │
-│ Scheduler              │
-│ - start_strength: 1.0  │
-│ - end_strength: 0.2    │
-│ - curve_type: ease_out │
-└──────────┬─────────────┘
-           │ (TIMESTEP_KF output)
-           │
-┌──────────▼─────────────┐
-│ Apply Advanced         │
-│ ControlNet             │
-│ ⚠️ IMPORTANT SETTINGS: │
-│ - strength: 1.00       │ ← Must be 1.0!
-│ - start_percent: 0.000 │ ← Must be 0.0!
-│ - end_percent: 1.000   │ ← Must be 1.0!
-└────────────────────────┘
-```
+#### 🧮 Custom Formula Support
+- **Mathematical Expression Input**
+  - Use custom formulas with variable `t` (0 to 1)
+  - Examples: `sin(t*3.14)`, `t**2`, `1-exp(-5*t)`
+  - Safe evaluation with whitelisted functions
+  - Supports: sin, cos, tan, exp, log, sqrt, abs, pi, e, numpy operations
 
-### 2. Multi-Mask Strength Combiner
+#### 🎛️ Curve Modulation
+- **Mirror Curve**: Create symmetrical curves around midpoint
+- **Repeat Curve**: Repeat the pattern 1-10 times for multi-segment control
+- **Adaptive Keyframes**: Automatically place more keyframes where curve changes rapidly
+- **Curve Blending**: Mix two different curve types
+  - Blend between any two curve types
+  - Adjustable blend amount (0.0-1.0)
+
+#### 📊 Enhanced Features
+- **A/B Comparison**: Show two curves side-by-side for visual comparison
+- **CSV Export**: Save curve data for reuse and sharing
+- **Curve Statistics Output**: Detailed stats (average, max, min, area under curve, rate of change)
+- **Step Mode**: Use absolute steps instead of percentages
+- **Comparison Graphs**: Overlay multiple curves for testing
+
+**New Parameters:**
+- `preset`: Quick preset selection
+- `mode`: "percent" or "steps"
+- `total_steps`: For step mode (1-10000)
+- `custom_formula`: Math expression for custom curves
+- `mirror_curve`: Create symmetrical curves
+- `repeat_curve`: Repeat pattern N times
+- `adaptive_keyframes`: Smart keyframe distribution
+- `blend_curve_type`: Second curve for blending
+- `blend_amount`: Blend strength (0.0-1.0)
+- `comparison_curve`: Show comparison curve
+- `save_curve`: Export to CSV
+- `curve_filename`: Export filename
+
+**Additional Outputs:**
+- `curve_stats`: TEXT output with detailed statistics
+
+**Use Cases:**
+- **Quick Workflows**: Use presets for instant results
+- **Experimentation**: Try comparison curves before committing
+- **Complex Patterns**: Repeat and mirror for intricate schedules
+- **Data Analysis**: Export curves for documentation and sharing
+- **Custom Curves**: Write any mathematical function you can imagine
+
+### 3. Multi-Mask Strength Combiner
 
 Combine up to 5 separate masks with different ControlNet strengths.
 
@@ -165,7 +168,7 @@ Combine up to 5 separate masks with different ControlNet strengths.
 **Output:**
 - `combined_mask`: Connect to Apply Advanced ControlNet's mask_optional input
 
-### 3. Regional Prompting
+### 4. Regional Prompting
 
 Apply different text prompts to different regions of your image.
 
@@ -179,7 +182,7 @@ Apply different text prompts to different regions of your image.
 **Output:**
 - `conditioning`: Connect to KSampler's positive input
 
-### 4. Regional Prompt Interpolation
+### 5. Regional Prompt Interpolation
 
 Smoothly interpolate between different prompts across regions with gradient transitions.
 
@@ -208,7 +211,7 @@ Smoothly interpolate between different prompts across regions with gradient tran
 - Temperature transitions (hot → cold)
 - Depth-based prompts (near → far)
 
-### 5. Mask Symmetry Tool
+### 6. Mask Symmetry Tool
 
 Mirror and flip masks across different axes for symmetrical compositions.
 
@@ -241,17 +244,80 @@ Mirror and flip masks across different axes for symmetrical compositions.
 
 ## 💡 Usage Examples
 
-### Example 1: Composition Lock (Strong Start, Fade Out)
+### Example 1: Using Presets (NEW!)
+
+The fastest way to get started with the Advanced scheduler.
+
+**Workflow:**
+```
+┌──────────────────────────────────┐
+│ Advanced Curved ControlNet       │
+│ Scheduler                        │
+│ - preset: "Fade Out"             │ ← One click!
+│ (auto-sets all parameters)       │
+└────────────┬─────────────────────┘
+             │
+┌────────────▼─────────────────────┐
+│ Apply Advanced ControlNet        │
+│ - strength: 1.00                 │
+│ - start_percent: 0.000           │
+│ - end_percent: 1.000             │
+└──────────────────────────────────┘
+```
+
+**Result:** Instant composition lock → creative freedom transition.
+
+### Example 2: Custom Formula (NEW!)
+
+Create unique curves with mathematical expressions.
+
+**Workflow:**
+```
+┌──────────────────────────────────┐
+│ Advanced Curved ControlNet       │
+│ Scheduler                        │
+│ - curve_type: "custom_formula"   │
+│ - custom_formula:                │
+│   "sin(t*3.14)*exp(-t*2)"        │
+│ (dampened sine wave)             │
+└────────────┬─────────────────────┘
+             │
+┌────────────▼─────────────────────┐
+│ Apply Advanced ControlNet        │
+└──────────────────────────────────┘
+```
+
+**Result:** Oscillating control that gradually fades out - perfect for rhythmic effects.
+
+### Example 3: Curve Blending (NEW!)
+
+Mix two different curve types for complex control patterns.
+
+**Workflow:**
+```
+┌──────────────────────────────────┐
+│ Advanced Curved ControlNet       │
+│ Scheduler                        │
+│ - curve_type: "ease_out"         │
+│ - blend_curve_type: "sine_wave"  │
+│ - blend_amount: 0.3              │
+│ (70% ease_out + 30% sine)        │
+└──────────────────────────────────┘
+```
+
+**Result:** Smooth fade with subtle oscillation - adds organic variation.
+
+### Example 4: Composition Lock (Strong Start, Fade Out)
 
 Lock in composition early with ControlNet, then let the model add details freely.
 
 **Workflow:**
 ```
-┌──────────────────┐
-│ Load ControlNet │
-└────────┬─────────┘
-         │
-┌────────▼───────────────────────┐
+┌──────────────────────┐
+│ Load ControlNet      │
+└─────────┬────────────┘
+          │
+┌─────────▼──────────────────────┐
 │ Curved ControlNet Scheduler    │
 │ - start_strength: 1.0          │
 │ - end_strength: 0.1            │
@@ -259,9 +325,9 @@ Lock in composition early with ControlNet, then let the model add details freely
 │ - end_percent: 0.4             │
 │ - curve_type: ease_out         │
 │ - curve_param: 3.0             │
-└────────┬───────────────────────┘
-         │
-┌────────▼───────────────────────┐
+└─────────┬──────────────────────┘
+          │
+┌─────────▼──────────────────────┐
 │ Apply Advanced ControlNet      │
 │ ⚠️ CRITICAL SETTINGS:          │
 │ - strength: 1.00               │
@@ -272,7 +338,7 @@ Lock in composition early with ControlNet, then let the model add details freely
 
 **Result:** ControlNet strongly guides early steps (structure), then releases control by 40% for creative details.
 
-### Example 2: Detail Refinement (Weak Start, Strong End)
+### Example 5: Detail Refinement (Weak Start, Strong End)
 
 Let the model generate freely at first, then guide details toward the end.
 
@@ -286,9 +352,9 @@ Let the model generate freely at first, then guide details toward the end.
 │ - end_percent: 1.0             │
 │ - curve_type: ease_in          │
 │ - curve_param: 2.5             │
-└────────┬───────────────────────┘
-         │
-┌────────▼───────────────────────┐
+└─────────┬──────────────────────┘
+          │
+┌─────────▼──────────────────────┐
 │ Apply Advanced ControlNet      │
 │ - strength: 1.00               │
 │ - start_percent: 0.000         │
@@ -298,7 +364,7 @@ Let the model generate freely at first, then guide details toward the end.
 
 **Result:** First 50% is free generation, then ControlNet gradually takes over to refine details.
 
-### Example 3: Regional Control with Different Strengths
+### Example 6: Regional Control with Different Strengths
 
 Apply ControlNet more strongly to some areas than others.
 
@@ -329,7 +395,7 @@ Apply ControlNet more strongly to some areas than others.
 
 **Result:** Mountains follow reference closely (1.5x), flowers have creative freedom (0.4x), sky is moderately guided (0.8x).
 
-### Example 4: Regional Prompting with Different Descriptions
+### Example 7: Regional Prompting with Different Descriptions
 
 Use different text prompts for different regions.
 
@@ -339,7 +405,7 @@ Use different text prompts for different regions.
 │ CLIP Model   │
 └──────┬───────┘
        │
-┌──────▼──────────────────────────┐
+┌──────▼─────────────────────────┐
 │ Regional Prompting              │
 │ - base_positive:                │
 │   "masterpiece, photorealistic" │
@@ -355,13 +421,29 @@ Use different text prompts for different regions.
 │ - region_2_strength: 1.0        │
 └────────────┬────────────────────┘
              │
-     ┌───────▼────────┐
-     │ KSampler       │
-     │ (positive)     │
-     └────────────────┘
+     ┌───────▼─────────┐
+     │ KSampler        │
+     │ (positive)      │
+     └─────────────────┘
 ```
 
 **Result:** Mountains get "snowy peaks" style, flowers get "wildflowers" style, with base quality tags applied everywhere.
+
+## ⚠️ IMPORTANT: Advanced ControlNet Configuration
+
+**The Curved ControlNet Scheduler nodes work WITH Advanced ControlNet settings, not instead of them.**
+
+Your timestep keyframes are **multiplied** by the Advanced ControlNet base settings. For the scheduler to work as expected:
+
+**Required Settings on "Apply Advanced ControlNet" node:**
+- `strength`: **1.00** (acts as multiplier - set to 1.0 to use your keyframe values directly)
+- `start_percent`: **0.000** (your scheduler controls the timing)
+- `end_percent`: **1.000** (allow full range - your scheduler controls when it's active)
+
+**Why This Matters:**
+- If Advanced ControlNet `strength` = 0.5 and your keyframe = 1.0, actual strength = 0.5
+- If Advanced ControlNet `end_percent` = 0.5, your keyframes after 50% won't apply
+- Setting these to 1.0/0.0/1.0 lets your scheduler have full control
 
 ## 🎨 Practical Tips
 
@@ -385,6 +467,46 @@ Use different text prompts for different regions.
 - `sine_wave` → Oscillating control (wild results!)
 - `bounce` → Rhythmic control variations
 - Use `invert_curve` to flip any curve's behavior
+
+### Advanced Scheduler Pro Tips
+
+**Using Presets Effectively:**
+- Start with presets to find the general curve shape you want
+- Switch to "Custom" preset to fine-tune parameters
+- Use comparison curves to A/B test different presets
+
+**Custom Formula Examples:**
+```python
+# Dampened oscillation
+"sin(t*6.28)*exp(-t*3)"
+
+# Double peak
+"exp(-((t-0.3)**2)/0.05) + exp(-((t-0.7)**2)/0.05)"
+
+# Exponential rise with plateau
+"1 - exp(-t*5)"
+
+# Polynomial curve
+"3*t**2 - 2*t**3"
+
+# Sawtooth wave
+"(t*4) % 1"
+```
+
+**Curve Blending Strategies:**
+- Blend `linear` with `sine_wave` for subtle rhythm
+- Blend `ease_out` with `bell_curve` for complex transitions
+- Use low blend amounts (0.1-0.3) for subtle variations
+
+**Adaptive Keyframes:**
+- Turn ON for custom formulas with rapid changes
+- Turn OFF for simple curves (saves computation)
+- Most useful with sine waves, bounce, and custom formulas
+
+**CSV Export:**
+- Save successful curves for reuse
+- Share curves with the community
+- Document your workflows
 
 ### Understanding Curve Direction
 
@@ -475,6 +597,19 @@ Example with `exponential` (dramatic growth):
 - Solution: Make sure matplotlib is installed: `pip install matplotlib`
 - Set show_graph=false if you don't need it
 
+**Issue: Custom formula not working**
+- Solution:
+  - Check syntax - use `t` as the variable
+  - Make sure formula evaluates to numbers between 0-1 (auto-normalized)
+  - Avoid forbidden operations (import, exec, eval)
+  - Test with simple formulas first: `t**2`, `sin(t*3.14)`
+
+**Issue: Preset not applying**
+- Solution:
+  - Make sure preset is set to something other than "Custom"
+  - Preset values override manual settings
+  - Switch to "Custom" to use manual parameters
+
 **Issue: Masks not affecting output**
 - Solution:
   - Check that masks are actually painted (not empty)
@@ -512,19 +647,40 @@ Example with `exponential` (dramatic growth):
   - Use transition_mode=smooth for more obvious gradients
   - Check that masks are positioned to allow transition zones
 
+**Issue: CSV export not working**
+- Solution:
+  - Check file permissions in ComfyUI/output/curves directory
+  - Verify save_curve is set to True
+  - Check console for error messages
+
 ## 📋 Requirements
 
 - ComfyUI
-- ComfyUI-Advanced-ControlNet
+- ComfyUI-Advanced-ControlNet (required)
 - Python packages: matplotlib, pillow, numpy, torch
+
+## 🆕 What's New
+
+### Advanced Curved ControlNet Scheduler
+- **9 built-in presets** for instant workflows
+- **Custom formula support** - write any mathematical curve
+- **Professional easing functions** - quad, cubic, quart variants
+- **Curve blending** - mix two curve types
+- **Adaptive keyframes** - smart distribution based on curve steepness
+- **A/B comparison** - compare curves side-by-side
+- **CSV export** - save and share your curves
+- **Statistics output** - detailed curve analysis
+- **Mirror & repeat** - create complex multi-segment patterns
+- **Step mode** - use absolute steps instead of percentages
 
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to:
 - Report bugs
-- Suggest new curve types or features
+- Suggest new curve types, presets, or features
 - Request improvements
 - Submit pull requests
+- Share your custom formulas and workflows
 
 ## 📄 License
 
@@ -539,3 +695,11 @@ Created with assistance from Claude (Anthropic). Special thanks to the ComfyUI a
 **Enjoy creating with precise control over every aspect of your generation!** 🎨✨
 
 If you find this useful, consider starring the repo and sharing your creations!
+
+### 🔗 Links
+- [Advanced ControlNet](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet) - Required dependency
+- [ComfyUI](https://github.com/comfyanonymous/ComfyUI) - The amazing UI this runs on
+
+---
+
+**Version:** 2.0 (Added Advanced Curved ControlNet Scheduler)
