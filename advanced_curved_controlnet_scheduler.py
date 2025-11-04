@@ -40,9 +40,9 @@ CURVE_PRESETS = {
     "Custom": None,
     "Fade Out": {"start_strength": 1.0, "end_strength": 0.0, "curve_type": "ease_out", "curve_param": 2.0},
     "Fade In": {"start_strength": 0.0, "end_strength": 1.0, "curve_type": "ease_in", "curve_param": 2.0},
-    "Peak Control": {"start_strength": 0.0, "end_strength": 0.0, "curve_type": "bell_curve", "curve_param": 2.0},
-    "Valley Control": {"start_strength": 1.0, "end_strength": 1.0, "curve_type": "reverse_bell", "curve_param": 2.0},
-    "Strong Start+End": {"start_strength": 1.0, "end_strength": 1.0, "curve_type": "reverse_bell", "curve_param": 3.0},
+    "Peak Control": {"start_strength": 0.5, "end_strength": 0.5, "curve_type": "bell_curve", "curve_param": 2.0},
+    "Valley Control": {"start_strength": 0.5, "end_strength": 0.5, "curve_type": "reverse_bell", "curve_param": 2.0},
+    "Strong Start+End": {"start_strength": 0.5, "end_strength": 0.5, "curve_type": "reverse_bell", "curve_param": 3.0},
     "Oscillating": {"start_strength": 0.5, "end_strength": 0.5, "curve_type": "sine_wave", "curve_param": 3.0},
     "Exponential Decay": {"start_strength": 1.0, "end_strength": 0.0, "curve_type": "exponential", "curve_param": 4.0},
     "Smooth Transition": {"start_strength": 1.0, "end_strength": 0.0, "curve_type": "ease_in_out", "curve_param": 2.0},
@@ -476,7 +476,22 @@ Total Keyframes: {len(strengths)}
                 print("[ERROR] NaN in curve, using linear")
                 curve = np.linspace(0, 1, actual_keyframes)
             
-            strengths = start_strength + (end_strength - start_strength) * curve
+            # Special handling for bell, reverse bell, and sine_wave curves when start == end
+            # These curves should be centered around the start/end value, not interpolated
+            if curve_type in ["bell_curve", "reverse_bell", "sine_wave"] and abs(start_strength - end_strength) < 0.01:
+                # For bell curves, the curve IS the strength pattern
+                # Scale it to be centered around start_strength
+                curve_min = np.min(curve)
+                curve_max = np.max(curve)
+                if curve_max > curve_min:
+                    # Normalize curve to -0.5 to 0.5, then scale and offset
+                    normalized = (curve - curve_min) / (curve_max - curve_min) - 0.5
+                    strengths = start_strength + normalized * start_strength * 2
+                else:
+                    strengths = np.full_like(curve, start_strength)
+            else:
+                # Normal interpolation between start and end
+                strengths = start_strength + (end_strength - start_strength) * curve
             
             if clamp_strengths:
                 strengths = np.clip(strengths, 0.0, 10.0)
