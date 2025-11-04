@@ -73,7 +73,7 @@ class AdvancedCurvedControlNetScheduler:
             "required": {
                 "preset": (list(CURVE_PRESETS.keys()), {
                     "default": "Custom",
-                    "tooltip": "Pre-configured curve settings for common use cases"
+                    "tooltip": "Pre-configured curves (OVERRIDES strength/curve settings below when selected)"
                 }),
                 "mode": (["percent", "steps"], {
                     "default": "percent",
@@ -105,14 +105,14 @@ class AdvancedCurvedControlNetScheduler:
                     "min": 0.0,
                     "max": 10.0,
                     "step": 0.01,
-                    "tooltip": "ControlNet strength at start_percent"
+                    "tooltip": "ControlNet strength at start (ignored if preset selected)"
                 }),
                 "end_strength": ("FLOAT", {
                     "default": 0.0,
                     "min": 0.0,
                     "max": 10.0,
                     "step": 0.01,
-                    "tooltip": "ControlNet strength at end_percent"
+                    "tooltip": "ControlNet strength at end (ignored if preset selected)"
                 }),
                 "curve_type": ([
                     "linear",
@@ -124,14 +124,14 @@ class AdvancedCurvedControlNetScheduler:
                     "exponential", "bounce", "custom_bezier",
                     "custom_formula"
                 ], {
-                    "tooltip": "Shape of the interpolation curve between start and end strength"
+                    "tooltip": "Curve shape (ignored if preset selected)"
                 }),
                 "curve_param": ("FLOAT", {
                     "default": 2.0,
                     "min": 0.1,
                     "max": 10.0,
                     "step": 0.1,
-                    "tooltip": "Curve steepness: higher = more extreme curve"
+                    "tooltip": "Curve steepness (ignored if preset selected)"
                 }),
             },
             "optional": {
@@ -223,12 +223,19 @@ class AdvancedCurvedControlNetScheduler:
         if preset != "Custom" and preset in CURVE_PRESETS:
             preset_values = CURVE_PRESETS[preset]
             if preset_values:
-                return (
-                    preset_values.get("start_strength", start_strength),
-                    preset_values.get("end_strength", end_strength),
-                    preset_values.get("curve_type", curve_type),
-                    preset_values.get("curve_param", curve_param)
-                )
+                new_start = preset_values.get("start_strength", start_strength)
+                new_end = preset_values.get("end_strength", end_strength)
+                new_curve = preset_values.get("curve_type", curve_type)
+                new_param = preset_values.get("curve_param", curve_param)
+                
+                print(f"\n[Preset Applied: {preset}]")
+                print(f"  Start Strength: {start_strength} → {new_start}")
+                print(f"  End Strength: {end_strength} → {new_end}")
+                print(f"  Curve Type: {curve_type} → {new_curve}")
+                print(f"  Curve Param: {curve_param} → {new_param}")
+                print(f"  (Note: UI values don't auto-update, but these values ARE being used)\n")
+                
+                return (new_start, new_end, new_curve, new_param)
         return start_strength, end_strength, curve_type, curve_param
     
     def validate_inputs(self, start_percent, end_percent, num_keyframes, start_strength, end_strength):
