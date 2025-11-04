@@ -316,6 +316,8 @@ This is the most intuitive way to create custom curves. No numbers, no formulas 
 - ⚡ Quick experimentation
 - 🎯 Precise curve shapes
 - 🔄 Iterative refinement
+  <img width="774" height="750" alt="image" src="https://github.com/user-attachments/assets/fed9772d-16e5-4f50-a8b4-a3c197537c97" />
+
 
 **Workflow:**
 ```
