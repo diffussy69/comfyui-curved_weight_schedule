@@ -7,7 +7,9 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 ### ControlNet Scheduling
 - **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with multiple curve types
 - **Advanced Curved ControlNet Scheduler**: Feature-rich version with presets, custom formulas, curve blending, and more
-- **Curve Formula Builder**: NEW! Beginner-friendly visual curve builder - no math knowledge required!
+- **Curve Formula Builder**: Beginner-friendly pattern builder - select shapes and adjust sliders!
+- **Visual Curve Designer**: Plot control points with numeric inputs for precise curves
+- **Interactive Curve Designer**: 🎨 NEW! Draw curves with your mouse on an interactive canvas!
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
@@ -17,6 +19,20 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 - **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
 - **Auto Person Mask**: AI-powered automatic person/foreground detection and masking
 - **Auto Background Mask**: Automatic background masking (inverted person mask)
+
+## 🎯 Choose Your Curve Creation Method
+
+Different tools for different skill levels and preferences:
+
+| Method | Best For | Skill Level | Interface |
+|--------|----------|-------------|-----------|
+| **Presets** | Quick workflows | 🟢 Beginner | Dropdown menu |
+| **Curve Formula Builder** | Pattern-based curves | 🟢 Beginner | Sliders + patterns |
+| **Visual Curve Designer** | Precise coordinates | 🟡 Intermediate | Number inputs |
+| **Interactive Canvas** 🎨 | Drawing curves | 🟢 Beginner | Mouse drawing |
+| **Custom Formulas** | Mathematical curves | 🔴 Advanced | Code/math |
+
+**Recommendation:** Start with **Interactive Canvas** or **Presets** for the easiest experience!
 
 ## 📦 Installation
 
@@ -37,7 +53,7 @@ git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
 
 4. Install dependencies (if not already installed):
 ```bash
-pip install matplotlib pillow numpy torch
+pip install matplotlib pillow numpy torch scipy
 ```
 
 5. Restart ComfyUI
@@ -72,7 +88,7 @@ After installing and restarting:
 5. Optional: Check browser console (F12) for success messages
 
 The nodes will appear in:
-- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Curve Formula Builder
+- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Curve Formula Builder, Visual Curve Designer, Interactive Curve Designer 🎨
 - `mask` → Multi-Mask Strength Combiner, Mask Symmetry Tool
 - `conditioning` → Regional Prompting, Regional Prompt Interpolation
 
@@ -233,7 +249,88 @@ Build custom curves visually using simple patterns and sliders. Perfect for user
 - ✅ **Experiment freely** - Try patterns without breaking anything
 - ✅ **Perfect for beginners** - Plain English descriptions
 
-### 4. Multi-Mask Strength Combiner
+### 4. Visual Curve Designer
+
+**Plot curves by defining control points** - No math, just coordinates!
+
+Specify X/Y coordinates for control points and the node interpolates between them to create smooth curves.
+
+**Key Features:**
+- **Up to 10 control points**: Define as many or as few as you need
+- **Multiple interpolation methods**: 
+  - `linear`: Sharp corners, perfect for plateaus
+  - `smooth_spline`: Natural curves through all points
+  - `smooth_cubic`: Very smooth mathematical fit
+- **Normalize option**: Auto-scale output to 0-1 range
+- **Live preview**: See your curve before using it
+
+**How to Use:**
+1. Set `num_points` (2-10)
+2. Adjust `point_X_x` and `point_X_y` values
+   - X: 0.0 (start) to 1.0 (end)
+   - Y: 0.0 (low) to 2.0 (high)
+3. Choose interpolation method
+4. Copy generated formula
+5. Paste into Advanced Scheduler
+
+**Example Use Cases:**
+- **Double Peak**: Place high points at 0.3 and 0.7 for two focus moments
+- **Plateau**: (0.0, 0.0) → (0.2, 1.0) → (0.8, 1.0) → (1.0, 0.0)
+- **Custom Wave**: Alternating high/low points for oscillation
+
+### 5. Interactive Curve Designer 🎨
+
+**The ultimate curve creation tool** - Draw curves with your mouse on an interactive canvas!
+
+This is the most intuitive way to create custom curves. No numbers, no formulas - just draw what you want!
+
+**Canvas Controls:**
+- **Click**: Add new control point at cursor
+- **Drag**: Move existing points around
+- **Double-click**: Delete a point (min 2 points)
+- **Hover**: Highlights nearby points in orange
+
+**Buttons:**
+- **Clear All**: Start fresh with 2 points
+- **Reset Default**: Load example 5-point curve
+- **Add Point**: Add point at center
+- **Symmetry**: Mirror left side to right side
+- **Invert Y**: Flip curve upside down
+- **Sort Points**: Auto-organize by X coordinate
+
+**Canvas Features:**
+- ✨ **Real-time preview**: Curve updates as you draw
+- 📊 **Visual grid**: 10% increment guides
+- 🎯 **Point labels**: Shows coordinates for each point
+- 🔵 **Smooth interpolation**: Beautiful curves between points
+- 📐 **Axes labels**: Progress (X) and Strength (Y)
+
+**Interpolation Methods:**
+- `linear`: Sharp, geometric (stairs, plateaus)
+- `cubic_spline`: Smooth, natural curves (best for most cases)
+- `polynomial`: Very smooth mathematical fit
+- `hermite`: Balanced smoothness with automatic tangents
+
+**Perfect For:**
+- 🎨 Visual learners who prefer drawing
+- ⚡ Quick experimentation
+- 🎯 Precise curve shapes
+- 🔄 Iterative refinement
+
+**Workflow:**
+```
+Draw on canvas → Auto-generates formula → Copy to scheduler → Done!
+```
+
+**Why It's Amazing:**
+- ✅ Zero math knowledge required
+- ✅ See exactly what you're creating
+- ✅ Instant visual feedback
+- ✅ Easy to modify and refine
+- ✅ Most intuitive curve creation method
+- ✅ Professional results in seconds
+
+### 6. Multi-Mask Strength Combiner
 
 Combine up to 5 separate masks with different ControlNet strengths.
 
@@ -253,7 +350,7 @@ Combine up to 5 separate masks with different ControlNet strengths.
 **Output:**
 - `combined_mask`: Connect to Apply Advanced ControlNet's mask_optional input
 
-### 5. Regional Prompting
+### 7. Regional Prompting
 
 Apply different text prompts to different regions of your image.
 
@@ -267,7 +364,7 @@ Apply different text prompts to different regions of your image.
 **Output:**
 - `conditioning`: Connect to KSampler's positive input
 
-### 6. Regional Prompt Interpolation
+### 8. Regional Prompt Interpolation
 
 Smoothly interpolate between different prompts across regions with gradient transitions.
 
@@ -296,7 +393,7 @@ Smoothly interpolate between different prompts across regions with gradient tran
 - Temperature transitions (hot → cold)
 - Depth-based prompts (near → far)
 
-### 7. Mask Symmetry Tool
+### 9. Mask Symmetry Tool
 
 Mirror and flip masks across different axes for symmetrical compositions.
 
@@ -318,7 +415,7 @@ Mirror and flip masks across different axes for symmetrical compositions.
 **Output:**
 - `symmetrical_mask`: Symmetrical mask output
 
-### 8. Auto Person Mask
+### 10. Auto Person Mask
 
 AI-powered automatic person detection and masking.
 
@@ -331,7 +428,7 @@ AI-powered automatic person detection and masking.
 **Output:**
 - `mask`: Person/foreground mask
 
-### 9. Auto Background Mask
+### 11. Auto Background Mask
 
 Automatic background masking (inverted person mask).
 
@@ -550,9 +647,28 @@ Example with `exponential` (dramatic growth):
 
 - ComfyUI
 - ComfyUI-Advanced-ControlNet (required)
-- Python packages: matplotlib, pillow, numpy, torch
+- Python packages: matplotlib, pillow, numpy, torch, scipy
 
 ## 🆕 What's New
+
+### Version 3.0 - Interactive Curve Designer 🎨
+- **🎨 MAJOR: Interactive Curve Designer** - Draw curves with your mouse!
+  - Click and drag interface on an interactive canvas
+  - Real-time curve preview as you draw
+  - Visual control points with coordinate labels
+  - Quick actions: Symmetry, Invert, Clear, Reset
+  - Multiple interpolation methods
+  - Auto-generates formulas from your drawings
+  - **The most intuitive way to create curves!**
+- **📊 Visual Curve Designer** - Point-based curve creation
+  - Define up to 10 control points with numeric inputs
+  - Three interpolation methods (linear, spline, cubic)
+  - Precise coordinate control
+  - Perfect for mathematical precision
+- **🐛 Bug Fixes**:
+  - Fixed bell curve and sine wave presets (were showing flat lines)
+  - Improved preset handling for pattern-based curves
+  - Better normalization for oscillating curves
 
 ### Version 2.2 - Curve Formula Builder
 - **🎨 NEW: Curve Formula Builder** - Beginner-friendly visual curve creator!
@@ -611,4 +727,4 @@ If you find this useful, consider starring the repo and sharing your creations!
 
 ---
 
-**Version:** 2.2 (Added Curve Formula Builder - Beginner-Friendly Visual Curve Creator)
+**Version:** 3.0 (Interactive Curve Designer - Draw Curves with Your Mouse! 🎨)
