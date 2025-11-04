@@ -6,7 +6,8 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 
 ### ControlNet Scheduling
 - **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with multiple curve types
-- **Advanced Curved ControlNet Scheduler**: NEW! Feature-rich version with presets, custom formulas, curve blending, and more
+- **Advanced Curved ControlNet Scheduler**: Feature-rich version with presets, custom formulas, curve blending, and more
+- **Curve Formula Builder**: NEW! Beginner-friendly visual curve builder - no math knowledge required!
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
@@ -71,7 +72,7 @@ After installing and restarting:
 5. Optional: Check browser console (F12) for success messages
 
 The nodes will appear in:
-- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler
+- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Curve Formula Builder
 - `mask` → Multi-Mask Strength Combiner, Mask Symmetry Tool
 - `conditioning` → Regional Prompting, Regional Prompt Interpolation
 
@@ -179,7 +180,58 @@ Enhanced version with powerful new features for maximum control and flexibility.
 - **Data Analysis**: Export curves for documentation and sharing
 - **Custom Curves**: Write any mathematical function you can imagine
 
-### 3. Multi-Mask Strength Combiner
+### 3. Curve Formula Builder (NEW!)
+
+**Beginner-friendly curve creator - no math knowledge required!**
+
+Build custom curves visually using simple patterns and sliders. Perfect for users who want custom formulas without learning math syntax.
+
+**Key Features:**
+- **9 Pattern Types**: Choose from pre-made curve shapes
+  - Straight Line, Ease In, Ease Out, S-Curve
+  - Wave, Peak, Valley
+  - Exponential Growth, Exponential Decay
+- **Simple Controls**:
+  - `pattern`: Select the basic curve shape
+  - `strength` (0-100%): How dramatic the effect
+  - `speed` (0-100%): How fast the change happens
+  - `num_points`: Preview resolution (10-500)
+- **Visual Modifiers**:
+  - `flip_vertical`: Upside down
+  - `flip_horizontal`: Reverse direction
+  - `repeat_times`: Repeat pattern 1-10 times
+  - `show_formula`: Display the generated math (optional)
+
+**Outputs:**
+- `formula` (STRING): Generated formula - copy to Advanced Scheduler
+- `preview_graph` (IMAGE): Visual preview of your curve
+- `description` (STRING): Human-readable explanation
+
+**How to Use:**
+1. Add Curve Formula Builder node
+2. Select a pattern (e.g., "Ease Out (Slow End)")
+3. Adjust strength and speed sliders
+4. Connect `preview_graph` to Preview Image to see it
+5. Copy the `formula` output
+6. In Advanced Curved ControlNet Scheduler:
+   - Set `curve_type` to "custom_formula"
+   - Paste formula into `custom_formula` field
+7. Generate!
+
+**Example Patterns:**
+- **"Fade Out"**: Pattern: Ease Out + Strength: 70% → Strong start, smooth fade
+- **"Pulse Effect"**: Pattern: Wave + Speed: 40% + Repeat: 3x → Control pulses 3 times
+- **"Focus Middle"**: Pattern: Peak + Strength: 80% → Strong only in middle portion
+- **"Dramatic Late Change"**: Pattern: Exponential Growth + Strength: 90% → Huge impact at end
+
+**Benefits:**
+- ✅ **No math needed** - Visual controls only
+- ✅ **Instant preview** - See exactly what you'll get
+- ✅ **Learn gradually** - Can show formula when ready
+- ✅ **Experiment freely** - Try patterns without breaking anything
+- ✅ **Perfect for beginners** - Plain English descriptions
+
+### 4. Multi-Mask Strength Combiner
 
 Combine up to 5 separate masks with different ControlNet strengths.
 
@@ -199,7 +251,7 @@ Combine up to 5 separate masks with different ControlNet strengths.
 **Output:**
 - `combined_mask`: Connect to Apply Advanced ControlNet's mask_optional input
 
-### 4. Regional Prompting
+### 5. Regional Prompting
 
 Apply different text prompts to different regions of your image.
 
@@ -213,7 +265,7 @@ Apply different text prompts to different regions of your image.
 **Output:**
 - `conditioning`: Connect to KSampler's positive input
 
-### 5. Regional Prompt Interpolation
+### 6. Regional Prompt Interpolation
 
 Smoothly interpolate between different prompts across regions with gradient transitions.
 
@@ -242,7 +294,7 @@ Smoothly interpolate between different prompts across regions with gradient tran
 - Temperature transitions (hot → cold)
 - Depth-based prompts (near → far)
 
-### 6. Mask Symmetry Tool
+### 7. Mask Symmetry Tool
 
 Mirror and flip masks across different axes for symmetrical compositions.
 
@@ -264,7 +316,7 @@ Mirror and flip masks across different axes for symmetrical compositions.
 **Output:**
 - `symmetrical_mask`: Symmetrical mask output
 
-### 7. Auto Person Mask
+### 8. Auto Person Mask
 
 AI-powered automatic person detection and masking.
 
@@ -277,7 +329,7 @@ AI-powered automatic person detection and masking.
 **Output:**
 - `mask`: Person/foreground mask
 
-### 8. Auto Background Mask
+### 9. Auto Background Mask
 
 Automatic background masking (inverted person mask).
 
@@ -500,6 +552,14 @@ Example with `exponential` (dramatic growth):
 
 ## 🆕 What's New
 
+### Version 2.2 - Curve Formula Builder
+- **🎨 NEW: Curve Formula Builder** - Beginner-friendly visual curve creator!
+  - Build custom curves without any math knowledge
+  - 9 pre-made pattern types with simple sliders
+  - Live preview graph shows your curve in real-time
+  - Generates formulas for use in Advanced Scheduler
+  - Perfect for experimentation and learning
+
 ### Version 2.1 - UI Enhancement Update
 - **🎨 JavaScript UI Extension** - Now included automatically!
   - Automatic UI field updates when selecting presets
@@ -549,4 +609,4 @@ If you find this useful, consider starring the repo and sharing your creations!
 
 ---
 
-**Version:** 2.1 (Added JavaScript UI Extension for Automatic Preset Updates)
+**Version:** 2.2 (Added Curve Formula Builder - Beginner-Friendly Visual Curve Creator)
