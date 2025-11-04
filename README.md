@@ -19,14 +19,12 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 
 ## 📦 Installation
 
-### Basic Installation
-
 1. Navigate to your ComfyUI custom nodes directory:
 ```bash
 cd ComfyUI/custom_nodes/
 ```
 
-2. Clone my repository:
+2. Clone this repository:
 ```bash
 git clone https://github.com/diffussy69/comfyui-curved_weight_schedule.git
 ```
@@ -43,39 +41,34 @@ pip install matplotlib pillow numpy torch
 
 5. Restart ComfyUI
 
-### ✨ Enhanced UI Experience (Optional but Recommended!)
+**That's it!** ✨ The JavaScript UI extension is included automatically. Presets will update UI fields instantly with no additional setup required!
 
-**Want presets to automatically update the UI fields?** Install the JavaScript extension!
+### 🎉 What You Get Out of the Box
 
-#### Quick Install:
-```bash
-# Copy the JavaScript extension to web/extensions/
-cp ComfyUI/custom_nodes/comfyui-curved_weight_schedule/js/advanced_curved_scheduler.js ComfyUI/web/extensions/
-```
+When you select a preset:
+- ✅ **All UI fields update automatically** - No manual adjustments needed
+- ✅ **True one-click experience** - Select "Fade Out" and watch it apply instantly
+- ✅ **Visual confirmation** - See exactly what values are being used
+- ✅ **No confusion** - What you see is what you get!
 
-#### What This Does:
-- ✅ Selecting a preset **automatically updates all UI fields**
-- ✅ True "one-click" preset experience
-- ✅ No confusion about which values are being used
-- ✅ Visual confirmation that preset is applied
-
-**Before JS Extension:**
+**Before (old behavior):**
 ```
 Select "Fade Out" → UI fields don't change → Confusing 😕
 ```
 
-**After JS Extension:**
+**After (with this version):**
 ```
 Select "Fade Out" → All fields update instantly → Perfect! ✨
 ```
 
-#### Verification:
-After installing the JS extension:
-1. Restart ComfyUI
-2. Hard refresh browser (Ctrl+Shift+F5 / Cmd+Shift+R)
-3. Select any preset (not "Custom")
-4. Watch the UI fields update automatically!
-5. Check browser console (F12) for: `[Preset Applied] ...`
+### Verification
+
+After installing and restarting:
+1. Hard refresh browser (Ctrl+Shift+F5 / Cmd+Shift+R)
+2. Add the Advanced Curved ControlNet Scheduler node
+3. Select any preset (like "Fade Out")
+4. Watch the UI fields update automatically! 🎊
+5. Optional: Check browser console (F12) for success messages
 
 The nodes will appear in:
 - `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler
@@ -447,21 +440,14 @@ Example with `exponential` (dramatic growth):
   - Test with simple formulas first: `t**2`, `sin(t*3.14)`
 
 **Issue: Preset UI fields not updating**
-- **NEW Solution**: Install the JavaScript extension (see Installation)!
-  - Copy `js/advanced_curved_scheduler.js` to `ComfyUI/web/extensions/`
-  - Restart ComfyUI and hard refresh browser (Ctrl+Shift+F5)
-  - Presets will now update UI fields automatically
-- Alternative: Presets still work without JS - values are applied internally
-  - Check browser console (F12) for `[Preset Applied] ...` message
-  - The correct values ARE being used even if UI doesn't update
-
-**Issue: JavaScript extension not working**
-- Solution:
-  - Verify file is in correct location: `ComfyUI/web/extensions/advanced_curved_scheduler.js`
-  - Restart ComfyUI completely
-  - Hard refresh browser: Ctrl+Shift+F5 (Windows) or Cmd+Shift+R (Mac)
-  - Open browser console (F12) and check for `[Preset Applied]` messages
-  - Check console for JavaScript errors
+- **Solution**: Make sure you restarted ComfyUI after installation
+  - Hard refresh browser (Ctrl+Shift+F5 / Cmd+Shift+R)  
+  - Check browser console (F12) - you should see `✅ Node patched successfully!`
+  - If you don't see that message, the extension may not have loaded
+  - Verify `/web/advanced_curved_scheduler.js` exists in your node folder
+- Alternative: Presets still work without UI updates - values are applied internally
+  - Check browser console (F12) for `✅ Preset applied successfully!` message when changing presets
+  - The correct values ARE being used even if UI doesn't update visually
 
 **Issue: Masks not affecting output**
 - Solution:
@@ -515,12 +501,12 @@ Example with `exponential` (dramatic growth):
 ## 🆕 What's New
 
 ### Version 2.1 - UI Enhancement Update
-- **🎨 JavaScript UI Extension** - Optional but recommended!
+- **🎨 JavaScript UI Extension** - Now included automatically!
   - Automatic UI field updates when selecting presets
   - True one-click preset experience
   - Visual confirmation of preset application
-  - No more confusion about which values are active
-- **📚 Enhanced Documentation** - Better installation guides and troubleshooting
+  - No manual installation required - works out of the box!
+- **📚 Enhanced Documentation** - Clearer installation and usage guides
 
 ### Version 2.0 - Advanced Curved ControlNet Scheduler
 - **9 built-in presets** for instant workflows
