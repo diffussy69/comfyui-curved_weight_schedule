@@ -217,6 +217,8 @@ Build custom curves visually using simple patterns and sliders. Perfect for user
    - Set `curve_type` to "custom_formula"
    - Paste formula into `custom_formula` field
 7. Generate!
+   <img width="1294" height="806" alt="image" src="https://github.com/user-attachments/assets/cec752aa-dc66-42c1-bf88-d07a2dcfa208" />
+
 
 **Example Patterns:**
 - **"Fade Out"**: Pattern: Ease Out + Strength: 70% → Strong start, smooth fade
