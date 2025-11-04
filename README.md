@@ -19,6 +19,8 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 
 ## 📦 Installation
 
+### Basic Installation
+
 1. Navigate to your ComfyUI custom nodes directory:
 ```bash
 cd ComfyUI/custom_nodes/
@@ -40,6 +42,40 @@ pip install matplotlib pillow numpy torch
 ```
 
 5. Restart ComfyUI
+
+### ✨ Enhanced UI Experience (Optional but Recommended!)
+
+**Want presets to automatically update the UI fields?** Install the JavaScript extension!
+
+#### Quick Install:
+```bash
+# Copy the JavaScript extension to web/extensions/
+cp ComfyUI/custom_nodes/comfyui-curved_weight_schedule/js/advanced_curved_scheduler.js ComfyUI/web/extensions/
+```
+
+#### What This Does:
+- ✅ Selecting a preset **automatically updates all UI fields**
+- ✅ True "one-click" preset experience
+- ✅ No confusion about which values are being used
+- ✅ Visual confirmation that preset is applied
+
+**Before JS Extension:**
+```
+Select "Fade Out" → UI fields don't change → Confusing 😕
+```
+
+**After JS Extension:**
+```
+Select "Fade Out" → All fields update instantly → Perfect! ✨
+```
+
+#### Verification:
+After installing the JS extension:
+1. Restart ComfyUI
+2. Hard refresh browser (Ctrl+Shift+F5 / Cmd+Shift+R)
+3. Select any preset (not "Custom")
+4. Watch the UI fields update automatically!
+5. Check browser console (F12) for: `[Preset Applied] ...`
 
 The nodes will appear in:
 - `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler
@@ -84,7 +120,7 @@ Enhanced version with powerful new features for maximum control and flexibility.
 **All Original Features Plus:**
 
 #### 🎨 Preset System
-- **9 Pre-configured Presets**: Quick one-click setups
+- **9 Pre-configured Presets**: Quick one-click setups (with optional JS extension for automatic UI updates!)
   - `Fade Out`: Strong start → weak end (composition lock)
   - `Fade In`: Weak start → strong end (detail refinement)
   - `Peak Control`: Peaks in middle (bell curve strength)
@@ -94,6 +130,8 @@ Enhanced version with powerful new features for maximum control and flexibility.
   - `Exponential Decay`: Dramatic fade
   - `Smooth Transition`: Gentle S-curve
   - `Custom`: Manual configuration
+
+> **💡 Pro Tip:** Install the JavaScript extension (see Installation section) to make presets automatically update all UI fields for a truly seamless experience!
 
 #### 🔢 Advanced Easing Functions
 - **Professional animation easing curves**:
@@ -221,264 +259,68 @@ Mirror and flip masks across different axes for symmetrical compositions.
   - `none`: No symmetry (passthrough)
   - `horizontal`: Left ↔ Right mirror
   - `vertical`: Top ↔ Bottom mirror
-  - `both`: Mirror both axes (4 copies)
-  - `diagonal_tl_br`: Mirror along \ diagonal
-  - `diagonal_tr_bl`: Mirror along / diagonal
-  - `radial_4way`: 4-way radial symmetry (kaleidoscope)
-- `blend_mode`: How to combine original with mirrored
-  - `replace`: Use mirrored where it exists
-  - `add`: Add mirrored to original
-  - `max`: Take highest value
-  - `average`: Average both
-- `blend_strength`: Strength of mirrored portion (0.0-1.0)
+  - `both`: Both axes (4-way symmetry)
+  - `diagonal_tl_br`: Top-left to bottom-right
+  - `diagonal_tr_bl`: Top-right to bottom-left
+  - `radial_4way`: 4-way radial symmetry
+  - `radial_8way`: 8-way radial symmetry
+- `blend_mode`: How to combine original and mirrored
+- `blend_strength`: Strength of symmetry effect (0.0-1.0)
 - `invert_mirrored`: Invert the mirrored portion
 
 **Output:**
-- `symmetrical_mask`: Mirrored mask ready to use
+- `symmetrical_mask`: Symmetrical mask output
 
-**Use Cases:**
-- Portraits: Paint one side of face, mirror to other
-- Architecture: Paint half of building
-- Butterflies/symmetrical subjects
-- Quick masking workflows
+### 7. Auto Person Mask
 
-## 💡 Usage Examples
+AI-powered automatic person detection and masking.
 
-### Example 1: Using Presets (NEW!)
+**Key Parameters:**
+- `image`: Input image
+- `threshold`: Detection confidence (0.0-1.0)
+- `expand_mask`: Pixels to expand detection (0-100)
+- `blur_radius`: Mask edge softening (0-50)
 
-The fastest way to get started with the Advanced scheduler.
+**Output:**
+- `mask`: Person/foreground mask
 
-**Workflow:**
-```
-┌──────────────────────────────────┐
-│ Advanced Curved ControlNet       │
-│ Scheduler                        │
-│ - preset: "Fade Out"             │ ← One click!
-│ (auto-sets all parameters)       │
-└────────────┬─────────────────────┘
-             │
-┌────────────▼─────────────────────┐
-│ Apply Advanced ControlNet        │
-│ - strength: 1.00                 │
-│ - start_percent: 0.000           │
-│ - end_percent: 1.000             │
-└──────────────────────────────────┘
-```
+### 8. Auto Background Mask
 
-**Result:** Instant composition lock → creative freedom transition.
+Automatic background masking (inverted person mask).
 
-### Example 2: Custom Formula (NEW!)
+**Key Parameters:**
+- Same as Auto Person Mask
 
-Create unique curves with mathematical expressions.
+**Output:**
+- `mask`: Background mask (everything except person)
 
-**Workflow:**
-```
-┌──────────────────────────────────┐
-│ Advanced Curved ControlNet       │
-│ Scheduler                        │
-│ - curve_type: "custom_formula"   │
-│ - custom_formula:                │
-│   "sin(t*3.14)*exp(-t*2)"        │
-│ (dampened sine wave)             │
-└────────────┬─────────────────────┘
-             │
-┌────────────▼─────────────────────┐
-│ Apply Advanced ControlNet        │
-└──────────────────────────────────┘
-```
+## 💡 Usage Tips
 
-**Result:** Oscillating control that gradually fades out - perfect for rhythmic effects.
+### Getting Started with Presets
 
-### Example 3: Curve Blending (NEW!)
+**With JavaScript Extension (Recommended):**
+1. Install the JS extension (see Installation)
+2. Select any preset from dropdown
+3. Watch all fields update automatically! ✨
+4. Generate immediately - no manual adjustment needed
 
-Mix two different curve types for complex control patterns.
+**Without JavaScript Extension:**
+- Presets still work internally
+- UI fields won't update visually, but preset values ARE being used
+- Check console output to see applied values
+- Consider installing JS extension for better UX
 
-**Workflow:**
-```
-┌──────────────────────────────────┐
-│ Advanced Curved ControlNet       │
-│ Scheduler                        │
-│ - curve_type: "ease_out"         │
-│ - blend_curve_type: "sine_wave"  │
-│ - blend_amount: 0.3              │
-│ (70% ease_out + 30% sine)        │
-└──────────────────────────────────┘
-```
+### Advanced Custom Formulas
 
-**Result:** Smooth fade with subtle oscillation - adds organic variation.
+Write any mathematical curve you can imagine! The formula uses `t` as variable (0 to 1).
 
-### Example 4: Composition Lock (Strong Start, Fade Out)
-
-Lock in composition early with ControlNet, then let the model add details freely.
-
-**Workflow:**
-```
-┌──────────────────────┐
-│ Load ControlNet      │
-└─────────┬────────────┘
-          │
-┌─────────▼──────────────────────┐
-│ Curved ControlNet Scheduler    │
-│ - start_strength: 1.0          │
-│ - end_strength: 0.1            │
-│ - start_percent: 0.0           │
-│ - end_percent: 0.4             │
-│ - curve_type: ease_out         │
-│ - curve_param: 3.0             │
-└─────────┬──────────────────────┘
-          │
-┌─────────▼──────────────────────┐
-│ Apply Advanced ControlNet      │
-│ ⚠️ CRITICAL SETTINGS:          │
-│ - strength: 1.00               │
-│ - start_percent: 0.000         │
-│ - end_percent: 1.000           │
-└────────────────────────────────┘
-```
-
-**Result:** ControlNet strongly guides early steps (structure), then releases control by 40% for creative details.
-
-### Example 5: Detail Refinement (Weak Start, Strong End)
-
-Let the model generate freely at first, then guide details toward the end.
-
-**Workflow:**
-```
-┌────────────────────────────────┐
-│ Curved ControlNet Scheduler    │
-│ - start_strength: 0.0          │
-│ - end_strength: 1.2            │
-│ - start_percent: 0.5           │
-│ - end_percent: 1.0             │
-│ - curve_type: ease_in          │
-│ - curve_param: 2.5             │
-└─────────┬──────────────────────┘
-          │
-┌─────────▼──────────────────────┐
-│ Apply Advanced ControlNet      │
-│ - strength: 1.00               │
-│ - start_percent: 0.000         │
-│ - end_percent: 1.000           │
-└────────────────────────────────┘
-```
-
-**Result:** First 50% is free generation, then ControlNet gradually takes over to refine details.
-
-### Example 6: Regional Control with Different Strengths
-
-Apply ControlNet more strongly to some areas than others.
-
-**Workflow:**
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│ Mountains    │     │ Flowers      │     │ Sky          │
-│ Mask         │     │ Mask         │     │ Mask         │
-└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
-       │                    │                    │
-       └────────────────────┼────────────────────┘
-                            │
-                ┌───────────▼──────────────────┐
-                │ Multi-Mask Strength          │
-                │ Combiner                     │
-                │ - mask_1_strength: 1.5       │  (mountains - high)
-                │ - mask_2_strength: 0.4       │  (flowers - low)
-                │ - mask_3_strength: 0.8       │  (sky - medium)
-                │ - blend_mode: max            │
-                └───────────┬──────────────────┘
-                            │
-                ┌───────────▼──────────────────┐
-                │ Apply Advanced ControlNet    │
-                │ (mask_optional input)        │
-                │ - strength: 1.00             │
-                └──────────────────────────────┘
-```
-
-**Result:** Mountains follow reference closely (1.5x), flowers have creative freedom (0.4x), sky is moderately guided (0.8x).
-
-### Example 7: Regional Prompting with Different Descriptions
-
-Use different text prompts for different regions.
-
-**Workflow:**
-```
-┌──────────────┐
-│ CLIP Model   │
-└──────┬───────┘
-       │
-┌──────▼─────────────────────────┐
-│ Regional Prompting              │
-│ - base_positive:                │
-│   "masterpiece, photorealistic" │
-│                                 │
-│ - region_1_mask: mountains      │
-│ - region_1_prompt:              │
-│   "snowy peaks, dramatic"       │
-│ - region_1_strength: 1.2        │
-│                                 │
-│ - region_2_mask: flowers        │
-│ - region_2_prompt:              │
-│   "wildflowers, soft bokeh"     │
-│ - region_2_strength: 1.0        │
-└────────────┬────────────────────┘
-             │
-     ┌───────▼─────────┐
-     │ KSampler        │
-     │ (positive)      │
-     └─────────────────┘
-```
-
-**Result:** Mountains get "snowy peaks" style, flowers get "wildflowers" style, with base quality tags applied everywhere.
-
-## ⚠️ IMPORTANT: Advanced ControlNet Configuration
-
-**The Curved ControlNet Scheduler nodes work WITH Advanced ControlNet settings, not instead of them.**
-
-Your timestep keyframes are **multiplied** by the Advanced ControlNet base settings. For the scheduler to work as expected:
-
-**Required Settings on "Apply Advanced ControlNet" node:**
-- `strength`: **1.00** (acts as multiplier - set to 1.0 to use your keyframe values directly)
-- `start_percent`: **0.000** (your scheduler controls the timing)
-- `end_percent`: **1.000** (allow full range - your scheduler controls when it's active)
-
-**Why This Matters:**
-- If Advanced ControlNet `strength` = 0.5 and your keyframe = 1.0, actual strength = 0.5
-- If Advanced ControlNet `end_percent` = 0.5, your keyframes after 50% won't apply
-- Setting these to 1.0/0.0/1.0 lets your scheduler have full control
-
-## 🎨 Practical Tips
-
-### ControlNet Curve Selection
-
-**For Composition Control:**
-- `ease_out` with curve_param=2.5-4.0 → Fast transition from strong to weak control
-- Set `start_strength=1.0, end_strength=0.1` → Lock composition early, release later
-- Set end_percent=0.3-0.5 → Only control first 30-50% of generation
-
-**For Detail Refinement:**
-- `ease_in` with curve_param=2.0 → Slowly builds up control
-- Set `start_strength=0.0, end_strength=1.0` → Let model generate freely, then guide details
-- Set start_percent=0.5 → Only apply ControlNet in second half
-
-**For Style Consistency:**
-- `bell_curve` with curve_param=2.0-3.0 → Strong guidance during middle (structure formation)
-- Set `start_strength=0.3, end_strength=0.3` → Weak at start/end for creative freedom
-
-**For Experimental Effects:**
-- `sine_wave` → Oscillating control (wild results!)
-- `bounce` → Rhythmic control variations
-- Use `invert_curve` to flip any curve's behavior
-
-### Advanced Scheduler Pro Tips
-
-**Using Presets Effectively:**
-- Start with presets to find the general curve shape you want
-- Switch to "Custom" preset to fine-tune parameters
-- Use comparison curves to A/B test different presets
-
-**Custom Formula Examples:**
+**Popular Formulas:**
 ```python
-# Dampened oscillation
-"sin(t*6.28)*exp(-t*3)"
+# Sine wave (3 oscillations)
+"sin(t * 3 * 3.14159)"
+
+# Ease-in-out cubic
+"3*t**2 - 2*t**3"
 
 # Double peak
 "exp(-((t-0.3)**2)/0.05) + exp(-((t-0.7)**2)/0.05)"
@@ -604,11 +446,22 @@ Example with `exponential` (dramatic growth):
   - Avoid forbidden operations (import, exec, eval)
   - Test with simple formulas first: `t**2`, `sin(t*3.14)`
 
-**Issue: Preset not applying**
+**Issue: Preset UI fields not updating**
+- **NEW Solution**: Install the JavaScript extension (see Installation)!
+  - Copy `js/advanced_curved_scheduler.js` to `ComfyUI/web/extensions/`
+  - Restart ComfyUI and hard refresh browser (Ctrl+Shift+F5)
+  - Presets will now update UI fields automatically
+- Alternative: Presets still work without JS - values are applied internally
+  - Check browser console (F12) for `[Preset Applied] ...` message
+  - The correct values ARE being used even if UI doesn't update
+
+**Issue: JavaScript extension not working**
 - Solution:
-  - Make sure preset is set to something other than "Custom"
-  - Preset values override manual settings
-  - Switch to "Custom" to use manual parameters
+  - Verify file is in correct location: `ComfyUI/web/extensions/advanced_curved_scheduler.js`
+  - Restart ComfyUI completely
+  - Hard refresh browser: Ctrl+Shift+F5 (Windows) or Cmd+Shift+R (Mac)
+  - Open browser console (F12) and check for `[Preset Applied]` messages
+  - Check console for JavaScript errors
 
 **Issue: Masks not affecting output**
 - Solution:
@@ -661,7 +514,15 @@ Example with `exponential` (dramatic growth):
 
 ## 🆕 What's New
 
-### Advanced Curved ControlNet Scheduler
+### Version 2.1 - UI Enhancement Update
+- **🎨 JavaScript UI Extension** - Optional but recommended!
+  - Automatic UI field updates when selecting presets
+  - True one-click preset experience
+  - Visual confirmation of preset application
+  - No more confusion about which values are active
+- **📚 Enhanced Documentation** - Better installation guides and troubleshooting
+
+### Version 2.0 - Advanced Curved ControlNet Scheduler
 - **9 built-in presets** for instant workflows
 - **Custom formula support** - write any mathematical curve
 - **Professional easing functions** - quad, cubic, quart variants
@@ -702,4 +563,4 @@ If you find this useful, consider starring the repo and sharing your creations!
 
 ---
 
-**Version:** 2.0 (Added Advanced Curved ControlNet Scheduler)
+**Version:** 2.1 (Added JavaScript UI Extension for Automatic Preset Updates)
