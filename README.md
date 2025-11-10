@@ -7,9 +7,11 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 ### ControlNet Scheduling
 - **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with multiple curve types
 - **Advanced Curved ControlNet Scheduler**: Feature-rich version with presets, custom formulas, curve blending, and more
+- **Curved Blur Batch Preprocessor**: ⭐ NEW! Generate batches of progressively blurred images following curves
+- **Batch Images to Timestep Keyframes**: ⭐ NEW! Map blur batches to ControlNet timestep keyframes
 - **Curve Formula Builder**: Beginner-friendly pattern builder - select shapes and adjust sliders!
 - **Visual Curve Designer**: Plot control points with numeric inputs for precise curves
-- **Interactive Curve Designer**: 🎨 NEW! Draw curves with your mouse on an interactive canvas!
+- **Interactive Curve Designer**: 🎨 Draw curves with your mouse on an interactive canvas!
 - **Visual Feedback**: Real-time graph preview showing your strength curve
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
@@ -89,6 +91,8 @@ After installing and restarting:
 
 The nodes will appear in:
 - `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Curve Formula Builder, Visual Curve Designer, Interactive Curve Designer 🎨
+- `ControlNet Preprocessors/tile` → Curved Blur (Batch) ⭐ NEW!
+- `ControlNet/Keyframing` → Batch Images to Timestep Keyframes ⭐ NEW!
 - `mask` → Multi-Mask Strength Combiner, Mask Symmetry Tool
 - `conditioning` → Regional Prompting, Regional Prompt Interpolation
 
@@ -123,7 +127,7 @@ Control ControlNet strength across generation steps using mathematical curves.
 - `TIMESTEP_KF`: Connect to Apply Advanced ControlNet's timestep_kf input
 - `curve_graph`: Visual preview (connect to Preview Image)
 
-### 2. Advanced Curved ControlNet Scheduler (NEW!)
+### 2. Advanced Curved ControlNet Scheduler
 
 Enhanced version with powerful new features for maximum control and flexibility.
 
@@ -196,339 +200,438 @@ Enhanced version with powerful new features for maximum control and flexibility.
 - **Data Analysis**: Export curves for documentation and sharing
 - **Custom Curves**: Write any mathematical function you can imagine
 
-### 3. Curve Formula Builder (NEW!)
+### 3. Curved Blur Batch Preprocessor ⭐ NEW v3.2!
+
+**The missing piece for dynamic tile ControlNet workflows!**
+
+Creates a batch of images with progressively varying Gaussian blur following mathematical curves. Pair this with the Batch Images to Timestep Keyframes node to synchronize blur progression with your ControlNet strength curves.
+
+**What It Does:**
+Takes a single image and generates multiple versions with different blur amounts, perfect for pairing with ControlNet tile models. Low blur = more structure preserved, high blur = more creative freedom for the AI.
+
+**Key Parameters:**
+- `image`: Input image to process
+- `num_keyframes`: How many blur variations to create (2-200)
+  - **⚠️ MUST MATCH the num_keyframes in your ControlNet Scheduler!**
+- `start_percent` / `end_percent`: Timeline range (0.0-1.0)
+- `start_sigma` / `end_sigma`: Gaussian blur sigma values
+  - **0.0-0.5**: Minimal blur (almost sharp)
+  - **0.5-2.0**: Light blur
+  - **2.0-6.0**: Moderate blur
+  - **6.0-12.0**: Heavy blur
+  - **12.0+**: Extreme blur
+- `curve_type`: Same curve options as the scheduler
+- `curve_param`: Curve steepness/shape control
+- `show_graph`: Display blur curve visualization
+
+**Outputs:**
+- `batch_images`: Batch of K blurred images (K,H,W,C)
+- `curve_graph`: Visual preview of blur progression
+- `stats`: Text summary of blur schedule
+
+**Technical Notes:**
+- Uses proper Gaussian blur with 3-sigma kernel sizing
+- Separable filter implementation for efficiency
+- Reflect padding to prevent edge darkening
+- Sigma = 0 produces identity (no blur)
+
+**Typical Workflow:**
+```
+[Load Image]
+    ↓
+[Curved Blur Batch Preprocessor]
+    num_keyframes: 10
+    start_sigma: 0.5 (sharp)
+    end_sigma: 8.0 (blurry)
+    curve_type: ease_out
+    ↓
+[Batch Images to Timestep Keyframes]
+    (see next node)
+```
+
+### 4. Batch Images to Timestep Keyframes ⭐ NEW v3.2!
+
+**The bridge between dynamic blur and ControlNet scheduling.**
+
+Maps a batch of images to existing ControlNet timestep keyframes by index. This is the "glue" that connects your blur progression with ControlNet strength curves.
+
+**What It Does:**
+Takes the batch of blurred images from the Curved Blur Preprocessor and attaches each image to the corresponding keyframe created by your scheduler. Image 0 goes to keyframe 0, image 1 to keyframe 1, etc.
+
+**Key Parameters:**
+- `images`: Batch of images from Curved Blur Preprocessor
+- `prev_timestep_kf`: Keyframes from Advanced Curved Scheduler
+- `print_keyframes`: Debug option to see mapping in console
+
+**Outputs:**
+- `timestep_kf`: Updated keyframes with images attached
+- `info`: Summary of mapping operation
+
+**Important Notes:**
+- ⚠️ **Match keyframe counts!** `num_keyframes` in both Curved Blur and Curved Scheduler must be identical
+- Images are mapped by index: `keyframe[i]` ← `image[i]`
+- Automatically warns if counts don't match
+- Works across different ComfyUI-Advanced-ControlNet API versions with automatic compatibility handling
+
+**Complete Workflow:**
+```
+[Load Image]
+    ↓
+[Curved Blur Batch Preprocessor]
+    num_keyframes: 10
+    start_sigma: 0.5
+    end_sigma: 8.0
+    curve_type: ease_out
+    ↓
+[Advanced Curved ControlNet Scheduler]
+    num_keyframes: 10  ← MUST MATCH!
+    start_strength: 1.0
+    end_strength: 0.3
+    curve_type: ease_out
+    ↓
+[Batch Images to Timestep Keyframes]
+    images: from Curved Blur
+    prev_timestep_kf: from Scheduler
+    ↓
+[Load ControlNet Model]
+    model: tile_controlnet
+    ↓
+[Apply Advanced ControlNet]
+    timestep_keyframe: from Batch mapper
+    ↓
+[KSampler]
+    Generate!
+```
+
+**Result Explanation:**
+
+*Early in generation (0-20%):*
+- **Sharp image (sigma 0.5)** + **Strong ControlNet (1.0)** = Strict adherence to composition
+
+*Mid generation (20-60%):*
+- **Increasing blur (sigma 2-5)** + **Decreasing strength (0.7-0.5)** = Balanced guidance
+
+*Late generation (60-100%):*
+- **Heavy blur (sigma 6-8)** + **Weak ControlNet (0.3)** = Creative freedom for details
+
+### 5. Curve Formula Builder
 
 **Beginner-friendly curve creator - no math knowledge required!**
 
-Build custom curves visually using simple patterns and sliders. Perfect for users who want custom formulas without learning math syntax.
+Build custom curves using pre-made patterns with simple sliders. Perfect for learning and experimentation without needing to understand mathematical formulas.
 
-**Key Features:**
-- **9 Pattern Types**: Choose from pre-made curve shapes
-  - Straight Line, Ease In, Ease Out, S-Curve
-  - Wave, Peak, Valley
-  - Exponential Growth, Exponential Decay
-- **Simple Controls**:
-  - `pattern`: Select the basic curve shape
-  - `strength` (0-100%): How dramatic the effect
-  - `speed` (0-100%): How fast the change happens
-  - `num_points`: Preview resolution (10-500)
-- **Visual Modifiers**:
-  - `flip_vertical`: Upside down
-  - `flip_horizontal`: Reverse direction
-  - `repeat_times`: Repeat pattern 1-10 times
-  - `show_formula`: Display the generated math (optional)
+**Pattern Types:**
+- **Fade In/Out**: Simple transitions
+- **S-Curve**: Smooth acceleration/deceleration
+- **Wave**: Oscillating patterns
+- **Spike**: Sharp peaks
+- **Bell**: Center emphasis
+- **Valley**: Edge emphasis
+- **Step**: Abrupt changes
+- **Exponential**: Dramatic transitions
+- **Bounce**: Elastic effects
+
+**Key Parameters:**
+- `pattern_type`: Choose your curve pattern
+- `intensity`: Control the dramatic effect (0.1-5.0)
+- `phase_shift`: Move the pattern left/right (0-360°)
+- `cycles`: Number of repetitions (1-10)
+- `num_points`: Curve resolution (10-200)
+- `show_preview`: Visual graph output
 
 **Outputs:**
-- `formula` (STRING): Generated formula - copy to Advanced Scheduler
-- `preview_graph` (IMAGE): Visual preview of your curve
-- `description` (STRING): Human-readable explanation
+- `formula`: TEXT output - copy this to Advanced Scheduler's custom_formula
+- `preview_graph`: Visual representation of your curve
+- `curve_values`: Raw numeric values for advanced use
 
 **How to Use:**
-1. Add Curve Formula Builder node
-2. Select a pattern (e.g., "Ease Out (Slow End)")
-3. Adjust strength and speed sliders
-4. Connect `preview_graph` to Preview Image to see it
-5. Copy the `formula` output
-6. In Advanced Curved ControlNet Scheduler:
-   - Set `curve_type` to "custom_formula"
-   - Paste formula into `custom_formula` field
-7. Generate!
-   <img width="1294" height="806" alt="image" src="https://github.com/user-attachments/assets/cec752aa-dc66-42c1-bf88-d07a2dcfa208" />
+1. Select a pattern_type
+2. Adjust intensity slider
+3. Preview the graph
+4. Copy the generated formula
+5. Paste into Advanced Curved ControlNet Scheduler's custom_formula field
 
+**Pro Tips:**
+- Start with intensity=1.0 and adjust from there
+- Use phase_shift to offset patterns without recreating
+- Combine with Advanced Scheduler's blend feature for complex curves
+- Export formulas to a text file for your personal library
 
-**Example Patterns:**
-- **"Fade Out"**: Pattern: Ease Out + Strength: 70% → Strong start, smooth fade
-- **"Pulse Effect"**: Pattern: Wave + Speed: 40% + Repeat: 3x → Control pulses 3 times
-- **"Focus Middle"**: Pattern: Peak + Strength: 80% → Strong only in middle portion
-- **"Dramatic Late Change"**: Pattern: Exponential Growth + Strength: 90% → Huge impact at end
+### 6. Visual Curve Designer
 
-**Benefits:**
-- ✅ **No math needed** - Visual controls only
-- ✅ **Instant preview** - See exactly what you'll get
-- ✅ **Learn gradually** - Can show formula when ready
-- ✅ **Experiment freely** - Try patterns without breaking anything
-- ✅ **Perfect for beginners** - Plain English descriptions
+**Point-based curve creation with numeric precision.**
 
-### 4. Visual Curve Designer
-
-**Plot curves by defining control points** - No math, just coordinates!
-
-Specify X/Y coordinates for control points and the node interpolates between them to create smooth curves.
-
-**Key Features:**
-- **Up to 10 control points**: Define as many or as few as you need
-- **Multiple interpolation methods**: 
-  - `linear`: Sharp corners, perfect for plateaus
-  - `smooth_spline`: Natural curves through all points
-  - `smooth_cubic`: Very smooth mathematical fit
-- **Normalize option**: Auto-scale output to 0-1 range
-- **Live preview**: See your curve before using it
-
-**How to Use:**
-1. Set `num_points` (2-10)
-2. Adjust `point_X_x` and `point_X_y` values
-   - X: 0.0 (start) to 1.0 (end)
-   - Y: 0.0 (low) to 2.0 (high)
-3. Choose interpolation method
-4. Copy generated formula
-5. Paste into Advanced Scheduler
-
-**Example Use Cases:**
-- **Double Peak**: Place high points at 0.3 and 0.7 for two focus moments
-- **Plateau**: (0.0, 0.0) → (0.2, 1.0) → (0.8, 1.0) → (1.0, 0.0)
-- **Custom Wave**: Alternating high/low points for oscillation
-
-### 5. Interactive Curve Designer 🎨
-
-**The ultimate curve creation tool** - Draw curves with your mouse on an interactive canvas!
-
-This is the most intuitive way to create custom curves. No numbers, no formulas - just draw what you want!
-
-**Canvas Controls:**
-- **Click**: Add new control point at cursor
-- **Drag**: Move existing points around
-- **Double-click**: Delete a point (min 2 points)
-- **Hover**: Highlights nearby points in orange
-
-**Buttons:**
-- **Clear All**: Start fresh with 2 points
-- **Reset Default**: Load example 5-point curve
-- **Add Point**: Add point at center
-- **Symmetry**: Mirror left side to right side
-- **Invert Y**: Flip curve upside down
-- **Sort Points**: Auto-organize by X coordinate
-
-**Canvas Features:**
-- ✨ **Real-time preview**: Curve updates as you draw
-- 📊 **Visual grid**: 10% increment guides
-- 🎯 **Point labels**: Shows coordinates for each point
-- 🔵 **Smooth interpolation**: Beautiful curves between points
-- 📐 **Axes labels**: Progress (X) and Strength (Y)
-
-**Interpolation Methods:**
-- `linear`: Sharp, geometric (stairs, plateaus)
-- `cubic_spline`: Smooth, natural curves (best for most cases)
-- `polynomial`: Very smooth mathematical fit
-- `hermite`: Balanced smoothness with automatic tangents
-
-**Perfect For:**
-- 🎨 Visual learners who prefer drawing
-- ⚡ Quick experimentation
-- 🎯 Precise curve shapes
-- 🔄 Iterative refinement
-  <img width="774" height="750" alt="image" src="https://github.com/user-attachments/assets/fed9772d-16e5-4f50-a8b4-a3c197537c97" />
-
-
-**Workflow:**
-```
-Draw on canvas → Auto-generates formula → Copy to scheduler → Done!
-```
-
-**Why It's Amazing:**
-- ✅ Zero math knowledge required
-- ✅ See exactly what you're creating
-- ✅ Instant visual feedback
-- ✅ Easy to modify and refine
-- ✅ Most intuitive curve creation method
-- ✅ Professional results in seconds
-
-### 6. Multi-Mask Strength Combiner
-
-Combine up to 5 separate masks with different ControlNet strengths.
+Define curves by specifying exact control point coordinates. Perfect when you know exactly what values you want at specific times.
 
 **Key Parameters:**
-- `base_strength`: Global multiplier for all masks
-- `mask_X`: Individual mask inputs (1-5)
-- `mask_X_strength`: Strength multiplier for each mask
-- `blend_mode`: How overlapping masks combine
-- `normalize_output`: Clamp result to [0,1]
-
-**Blend Modes:**
-- `max`: Takes highest strength (best for separate regions)
-- `add`: Adds strengths together (for layering)
-- `multiply`: Multiplies strengths (for soft effects)
-- `average`: Averages all strengths (for smooth blending)
-
-**Output:**
-- `combined_mask`: Connect to Apply Advanced ControlNet's mask_optional input
-
-### 7. Regional Prompting
-
-Apply different text prompts to different regions of your image.
-
-**Key Parameters:**
-- `clip`: Your CLIP model
-- `base_positive`: Base prompt applied to entire image
-- `region_X_mask`: Mask for each region (1-5)
-- `region_X_prompt`: Text prompt for that region
-- `region_X_strength`: How strongly the prompt affects the region
-
-**Output:**
-- `conditioning`: Connect to KSampler's positive input
-
-### 8. Regional Prompt Interpolation
-
-Smoothly interpolate between different prompts across regions with gradient transitions.
-
-**Key Parameters:**
-- `clip`: Your CLIP model
-- `base_positive`: Base prompt applied everywhere
-- `region_X_mask`: Masks for regions to interpolate between (supports 3 regions)
-- `region_X_prompt`: Prompts for each region
-- `region_X_strength`: Conditioning strength for each region
-- `interpolation_steps`: Number of gradient steps between regions (2-20)
-- `transition_mode`: How to blend between regions
-  - `linear`: Straight blend
-  - `smooth`: Smoothstep S-curve
-  - `ease_in_out`: Slow start/end, fast middle
-- `gradient_direction`: Direction of transition flow
-  - `auto`: Detects from mask positions
-  - `left_to_right`, `right_to_left`, `top_to_bottom`, `bottom_to_top`, `radial`
+- `point_1` through `point_10`: (x, y) coordinate pairs
+  - x: Timeline position (0.0-1.0)
+  - y: Strength value (0.0-1.0)
+- `num_active_points`: How many points to use (2-10)
+- `interpolation_method`: How to connect points
+  - `linear`: Straight lines between points
+  - `spline`: Smooth curves through points
+  - `cubic`: Cubic interpolation
+- `normalize_y`: Auto-scale y values to 0-1 range
+- `num_keyframes`: Output resolution (2-200)
 
 **Outputs:**
-- `conditioning`: Connect to KSampler's positive input
-- `interpolation_viz`: Visual preview of interpolation zones
+- `TIMESTEP_KF`: Keyframes for ControlNet
+- `curve_graph`: Visual preview
+- `point_data`: TEXT summary of coordinates
 
 **Use Cases:**
-- Sunrise → Day → Sunset transitions
-- Sky → Horizon → Ground gradients
-- Temperature transitions (hot → cold)
-- Depth-based prompts (near → far)
+- Precise timing requirements
+- Replicating specific curves from data
+- Mathematical precision needed
+- Building libraries of exact curves
 
-### 9. Mask Symmetry Tool
+### 7. Interactive Curve Designer 🎨
 
-Mirror and flip masks across different axes for symmetrical compositions.
+**The most intuitive way to create curves - draw with your mouse!**
 
-**Key Parameters:**
-- `mask`: Input mask to mirror
-- `symmetry_mode`: Type of symmetry to apply
-  - `none`: No symmetry (passthrough)
-  - `horizontal`: Left ↔ Right mirror
-  - `vertical`: Top ↔ Bottom mirror
-  - `both`: Both axes (4-way symmetry)
-  - `diagonal_tl_br`: Top-left to bottom-right
-  - `diagonal_tr_bl`: Top-right to bottom-left
-  - `radial_4way`: 4-way radial symmetry
-  - `radial_8way`: 8-way radial symmetry
-- `blend_mode`: How to combine original and mirrored
-- `blend_strength`: Strength of symmetry effect (0.0-1.0)
-- `invert_mirrored`: Invert the mirrored portion
+Click and drag on an interactive canvas to create custom curves visually. No numbers, no formulas - just draw what you want!
 
-**Output:**
-- `symmetrical_mask`: Symmetrical mask output
-
-### 10. Auto Person Mask
-
-AI-powered automatic person detection and masking.
+**Features:**
+- **Click-and-drag interface**: Directly manipulate curves
+- **Real-time preview**: See changes instantly
+- **Visual control points**: Coordinate labels show exact values
+- **Quick actions**:
+  - `Symmetry`: Mirror your curve around center
+  - `Invert`: Flip curve vertically
+  - `Clear`: Start fresh
+  - `Reset`: Return to default
+- **Interpolation methods**: Linear, spline, or cubic
+- **Auto-formula generation**: Exports mathematical formula
 
 **Key Parameters:**
-- `image`: Input image
-- `threshold`: Detection confidence (0.0-1.0)
-- `expand_mask`: Pixels to expand detection (0-100)
-- `blur_radius`: Mask edge softening (0-50)
+- `canvas_width` / `canvas_height`: Drawing area size
+- `num_control_points`: How many points to place (2-20)
+- `interpolation`: Connection method
+- `show_coordinates`: Display point values
+- `grid_lines`: Visual guides
+- `num_keyframes`: Output resolution (2-200)
 
-**Output:**
-- `mask`: Person/foreground mask
+**Outputs:**
+- `TIMESTEP_KF`: Keyframes for ControlNet
+- `curve_canvas`: Interactive drawing surface
+- `curve_graph`: Standard preview
+- `formula_output`: Generated formula for reuse
 
-### 11. Auto Background Mask
+**How to Use:**
+1. Open the Interactive Curve Designer node
+2. Click on canvas to place control points
+3. Drag points to adjust curve shape
+4. Use quick action buttons as needed
+5. Connect output to Apply Advanced ControlNet
 
-Automatic background masking (inverted person mask).
+**Pro Tips:**
+- Start with fewer points (5-8), add more if needed
+- Use symmetry for fade-in-fade-out effects
+- Enable grid_lines for precise alignment
+- Save formula_output for your favorite curves
+
+### 8. Multi-Mask Strength Combiner
+
+Apply different ControlNet strengths to different regions of your image using masks.
 
 **Key Parameters:**
-- Same as Auto Person Mask
+- `base_strength`: Default strength for unmasked areas
+- `mask_1` through `mask_8`: Region masks
+- `strength_1` through `strength_8`: Strength per mask
+- `blend_mode`: How masks interact
+- `normalize_output`: Auto-balance strengths
 
-**Output:**
-- `mask`: Background mask (everything except person)
+**Outputs:**
+- `TIMESTEP_KF`: Combined keyframes
+- `strength_map`: Visual representation
 
-## 💡 Usage Tips
+**Use Cases:**
+- Emphasize subject over background
+- Different strengths for different objects
+- Gradual strength transitions
+- Complex multi-region control
 
-### Getting Started with Presets
+### 9. Regional Prompting
 
-**With JavaScript Extension (Recommended):**
-1. Install the JS extension (see Installation)
-2. Select any preset from dropdown
-3. Watch all fields update automatically! ✨
-4. Generate immediately - no manual adjustment needed
+Use different text prompts for different masked areas.
 
-**Without JavaScript Extension:**
-- Presets still work internally
-- UI fields won't update visually, but preset values ARE being used
-- Check console output to see applied values
-- Consider installing JS extension for better UX
+**Key Parameters:**
+- `base_prompt`: Default prompt
+- `region_1` through `region_4`: Area masks
+- `prompt_1` through `prompt_4`: Per-region prompts
+- `region_strength`: Influence of regional prompts
 
-### Advanced Custom Formulas
+**Outputs:**
+- `conditioning`: Combined prompt conditioning
 
-Write any mathematical curve you can imagine! The formula uses `t` as variable (0 to 1).
+### 10. Regional Prompt Interpolation
 
-**Popular Formulas:**
-```python
-# Sine wave (3 oscillations)
-"sin(t * 3 * 3.14159)"
+Create smooth transitions between different prompts using gradient masks.
 
-# Ease-in-out cubic
-"3*t**2 - 2*t**3"
+**Key Parameters:**
+- `prompt_a` / `prompt_b`: Start and end prompts
+- `mask_a` / `mask_b`: Region definitions
+- `interpolation_steps`: Smoothness (3-20)
+- `transition_mode`: linear, smooth, ease_in_out
+- `direction`: auto, horizontal, vertical, radial
 
-# Double peak
-"exp(-((t-0.3)**2)/0.05) + exp(-((t-0.7)**2)/0.05)"
+**Outputs:**
+- `conditioning`: Interpolated conditioning
+- `gradient_mask`: Visual transition preview
 
-# Exponential rise with plateau
-"1 - exp(-t*5)"
+### 11. Mask Symmetry Tool
 
-# Polynomial curve
-"3*t**2 - 2*t**3"
+Mirror masks across axes for symmetrical compositions.
 
-# Sawtooth wave
-"(t*4) % 1"
+**Key Parameters:**
+- `mask`: Input mask
+- `symmetry_mode`: horizontal, vertical, both, radial_4way
+- `blend_mode`: How to combine mirrors
+- `blend_strength`: Mixing amount
+- `invert_mirrored`: Create negative space
+
+**Outputs:**
+- `mask`: Symmetrical result
+- `preview`: Visual representation
+
+### 12. Auto Person Mask & Auto Background Mask
+
+AI-powered automatic segmentation for quick masking.
+
+**Outputs:**
+- `mask`: Person or background mask
+- `preview`: Visual confirmation
+
+## 💡 Usage Tips & Workflows
+
+### Dynamic Blur + Strength Workflow ⭐ NEW!
+
+**The Power Combination for Tile ControlNet:**
+
+This workflow gives you synchronized control over both blur and ControlNet strength, perfect for maintaining composition while allowing creative freedom.
+
+**Recommended Settings for Composition Lock:**
+```
+Curved Blur Batch Preprocessor:
+- num_keyframes: 10
+- start_sigma: 0.5 (sharp)
+- end_sigma: 8.0 (blurred)
+- curve_type: ease_out
+
+Advanced Curved ControlNet Scheduler:
+- num_keyframes: 10 (MATCH!)
+- start_strength: 1.0 (strong)
+- end_strength: 0.3 (weak)
+- curve_type: ease_out
 ```
 
-**Curve Blending Strategies:**
-- Blend `linear` with `sine_wave` for subtle rhythm
-- Blend `ease_out` with `bell_curve` for complex transitions
-- Use low blend amounts (0.1-0.3) for subtle variations
+**Result:** Strong compositional adherence early (sharp + strong) transitioning to creative detail generation late (blurry + weak).
 
-**Adaptive Keyframes:**
-- Turn ON for custom formulas with rapid changes
-- Turn OFF for simple curves (saves computation)
-- Most useful with sine waves, bounce, and custom formulas
+**Recommended Settings for Detail Refinement:**
+```
+Curved Blur Batch Preprocessor:
+- start_sigma: 8.0 (blurred)
+- end_sigma: 0.5 (sharp)
+- curve_type: ease_in
 
-**CSV Export:**
-- Save successful curves for reuse
-- Share curves with the community
-- Document your workflows
+Advanced Curved ControlNet Scheduler:
+- start_strength: 0.3 (weak)
+- end_strength: 1.0 (strong)
+- curve_type: ease_in
+```
 
-### Understanding Curve Direction
+**Result:** Creative freedom early, then lock in details as generation progresses.
 
-**The curve type controls the SHAPE, your strength values control the DIRECTION:**
+**Coordinating Curves:**
 
-Example with `ease_in` (slow start, fast end):
-- `start=1.0, end=0.0` → Stays at 1.0 for a while, then drops quickly to 0.0
-- `start=0.0, end=1.0` → Stays at 0.0 for a while, then rises quickly to 1.0
+You can use **different curve types** for blur vs. strength:
+- Blur: `ease_out` (sharp → blurred)
+- Strength: `exponential` (strong fade)
+- Result: Extra emphasis on early composition control
 
-Example with `exponential` (dramatic growth):
-- `start=0.2, end=1.5` → Slowly starts at 0.2, then dramatically shoots up to 1.5
-- `start=1.5, end=0.2` → Stays high at 1.5, then drops dramatically to 0.2
+Or use **matching curves** for synchronized progression:
+- Both: `ease_in_out`
+- Result: Smooth, balanced transition
 
-**Pro Tip:** Use the graph preview to verify your curve looks correct before generating!
+**Critical Reminder:** ⚠️ Always match `num_keyframes` between Curved Blur and Scheduler!
 
-### Mask Painting Tips
+### Curve Selection Guide
 
-- Paint each region as a separate mask - don't worry about opacity
-- Use full opacity - the strength settings control the effect
-- Allow small overlaps - use blend_mode=max to handle them
-- Test one region at a time - easier to dial in individual strengths
+**For Fade Out (Strong → Weak):**
+- Presets: "Fade Out" or "Exponential Decay"
+- Curve: ease_out, exponential
+- Use case: Lock composition, let details emerge
 
-### Regional Prompting Best Practices
+**For Fade In (Weak → Strong):**
+- Presets: "Fade In"
+- Curve: ease_in
+- Use case: Rough sketch → detailed refinement
 
-**Base Prompt:**
-- Use for universal quality tags: "masterpiece, high quality, detailed"
-- Avoid specific objects/subjects
+**For Peak Control:**
+- Presets: "Peak Control"
+- Curve: bell_curve
+- Use case: Strong control in middle steps
 
-**Regional Prompts:**
-- Be specific about what's in that region
-- Include style/lighting/atmosphere for that area
-- Can include negative concepts if needed
+**For Smooth Transitions:**
+- Presets: "Smooth Transition"
+- Curve: ease_in_out
+- Use case: Natural, organic progression
 
-**Strength Values:**
+**For Experimental:**
+- Presets: "Oscillating"
+- Curve: sine_wave, bounce
+- Use case: Wave patterns, bouncing effects
+
+### Custom Formula Examples
+
+**Delayed Fade:**
+```
+1 if t < 0.3 else 1 - ((t-0.3)/0.7)**2
+```
+Stay at full strength until 30%, then fade
+
+**Sharp Drop:**
+```
+exp(-8*t)
+```
+Exponential decay, very dramatic
+
+**Double Peak:**
+```
+sin(t*6.28)*0.5 + 0.5
+```
+Full wave cycle, oscillates twice
+
+**Ease Out Cubic:**
+```
+1 - (1-t)**3
+```
+Cubic easing, very smooth
+
+### Preset Combinations
+
+**Photobash Workflow:**
+1. Load reference image
+2. Curved Blur: sharp → blurred (ease_out)
+3. Use "Fade Out" preset
+4. Strong early adherence, creative details
+
+**Detail Enhancement:**
+1. Load rough generation
+2. Curved Blur: blurred → sharp (ease_in)
+3. Use "Fade In" preset
+4. Refine and sharpen progressively
+
+**Oscillating Experiments:**
+1. Any input
+2. Curved Blur: sine_wave
+3. Use "Oscillating" preset
+4. Wave pattern for creative effects
+
+### Multi-Mask Strength Tips
+
+**Region Priority:**
 - Start at 1.0 for all regions
 - Increase if a region isn't responding (1.2-1.5)
 - Decrease if a region is overpowering others (0.6-0.8)
@@ -577,6 +680,26 @@ Example with `exponential` (dramatic growth):
   - Set `end_percent` to **1.000**
   - These settings must be correct for the scheduler to work!
 
+**Issue: Blur not applying or all images look the same** ⭐ NEW
+- **Solution**: 
+  - Verify `start_sigma` ≠ `end_sigma` in Curved Blur node
+  - Check that `num_keyframes` matches between Curved Blur and Scheduler
+  - Enable `show_graph` to verify curve is not flat
+  - Look for console warnings about keyframe mismatches
+
+**Issue: "Keyframe count mismatch" warning** ⭐ NEW
+- **Solution**:
+  - Set identical `num_keyframes` in both Curved Blur and Scheduler nodes
+  - Only the minimum count will be used if they differ
+  - Check console output to see how many keyframes were actually mapped
+
+**Issue: Blur progression not visible in generation** ⭐ NEW
+- **Solution**:
+  - Ensure Batch Images to Timestep Keyframes node is connected
+  - Verify ControlNet model is tile_controlnet (or compatible tile model)
+  - Check that Apply Advanced ControlNet is using the timestep_kf from the Batch mapper
+  - Try increasing sigma range (e.g., 0.5 to 12.0 instead of 2.0 to 6.0)
+
 **Issue: Curve going in wrong direction**
 - Solution: The curve shape is correct, but swap your `start_strength` and `end_strength` values
 - Remember: Curve types control SHAPE, not direction
@@ -614,12 +737,14 @@ Example with `exponential` (dramatic growth):
   - Check Advanced ControlNet `strength` setting (should be 1.0)
   - Increase `start_strength` and `end_strength` values in scheduler
   - Increase `base_strength` in Multi-Mask Strength Combiner
+  - For blur workflows: decrease sigma values (more sharp = more control)
 
 **Issue: Effect too strong everywhere**
 - Solution:
   - Decrease `start_strength` and `end_strength` values
   - Decrease individual mask strengths in Multi-Mask Combiner
   - Check that Advanced ControlNet strength isn't multiplying your values
+  - For blur workflows: increase sigma values (more blur = less control)
 
 **Issue: Regional prompts bleeding into each other**
 - Solution:
@@ -652,6 +777,30 @@ Example with `exponential` (dramatic growth):
 - Python packages: matplotlib, pillow, numpy, torch, scipy
 
 ## 🆕 What's New
+
+### Version 3.2 - Dynamic Blur Workflow 🌊
+- **🌊 MAJOR: Curved Blur Batch Preprocessor** - Sync blur with ControlNet scheduling!
+  - Generate batches of progressively blurred images following curves
+  - Gaussian blur with proper 3-sigma kernels and reflect padding
+  - Full curve type support matching the scheduler
+  - Visual graph preview of blur progression
+  - Sigma range from 0.0 (sharp) to 32.0+ (extreme blur)
+  - Perfect for tile ControlNet workflows
+- **🔗 Batch Images to Timestep Keyframes** - The missing link!
+  - Maps blur batches directly to ControlNet keyframes
+  - Automatic API compatibility across different Advanced ControlNet versions
+  - Smart warnings for mismatched keyframe counts
+  - Seamless integration with existing workflow
+- **🎯 Complete Workflow Integration**:
+  - Synchronize blur progression with strength curves
+  - Lock composition early, creative freedom late
+  - Or reverse: rough start, detailed refinement
+  - Mix and match curve types for blur vs strength
+- **⚡ Technical Improvements**:
+  - Robust fallback handling for TimestepKeyframe imports
+  - Better error messages and user warnings
+  - Improved graph generation with graceful failure handling
+  - Zero blur (sigma=0) optimization
 
 ### Version 3.0 - Interactive Curve Designer 🎨
 - **🎨 MAJOR: Interactive Curve Designer** - Draw curves with your mouse!
@@ -729,4 +878,4 @@ If you find this useful, consider starring the repo and sharing your creations!
 
 ---
 
-**Version:** 3.0 (Interactive Curve Designer - Draw Curves with Your Mouse! 🎨)
+**Version:** 3.2 (Dynamic Blur Workflow - Sync Blur & Strength! 🌊)
