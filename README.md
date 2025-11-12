@@ -16,6 +16,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
 ### Regional Prompting & Masking
+- **Multi-Layer Mask Editor**: 🎨 Interactive canvas-based mask editor with multiple layers
 - **Regional Prompting**: Use different text prompts for different masked areas
 - **Regional Prompt Interpolation**: Smooth gradient transitions between different prompts
 - **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
@@ -93,7 +94,7 @@ The nodes will appear in:
 - `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Curve Formula Builder, Visual Curve Designer, Interactive Curve Designer 🎨
 - `ControlNet Preprocessors/tile` → Curved Blur (Batch) ⭐ NEW!
 - `ControlNet/Keyframing` → Batch Images to Timestep Keyframes ⭐ NEW!
-- `mask` → Multi-Mask Strength Combiner, Mask Symmetry Tool
+- `mask` → Multi-Layer Mask Editor, Multi-Mask Strength Combiner, Mask Symmetry Tool
 - `conditioning` → Regional Prompting, Regional Prompt Interpolation
 
 ## 🎯 Node Overview
@@ -431,7 +432,61 @@ Click and drag on an interactive canvas to create custom curves visually. No num
 - Enable grid_lines for precise alignment
 - Save formula_output for your favorite curves
 
-### 8. Multi-Mask Strength Combiner
+### 8. Multi-Layer Mask Editor
+
+🎨 Interactive canvas-based mask editor with multiple layers, pan/zoom, and professional painting tools. Perfect for creating complex masks with separate elements.
+
+**Key Features:**
+- **Multiple layers**: Up to 10 independent mask layers
+- **Layer management**: Toggle visibility, reorder, add/remove layers
+- **Professional tools**: Paint/erase with adjustable brush size
+- **Pan & zoom**: Navigate high-resolution images easily
+- **Layer fill**: Quickly fill or clear entire layers
+- **Color-coded layers**: Each layer has a unique color for easy identification
+- **Real-time preview**: See all layers composited together
+
+**Key Parameters:**
+- `image`: Base image to paint masks on
+- `num_layers`: Number of mask layers (1-10)
+- `masks_data`: Stored mask data (auto-managed)
+
+**Controls:**
+- **Paint/Erase**: Toggle between adding and removing mask
+- **Brush Size**: Adjust from 1-200px
+- **Fill Layer**: Fill entire layer based on Paint/Erase mode
+- **Mouse wheel**: Zoom in/out
+- **Space + Drag** or **Middle click + Drag**: Pan around canvas
+- **Layer visibility toggle**: Show/hide individual layers
+
+**Outputs:**
+- `layer_1` through `layer_10`: Individual layer masks
+- `combined_mask`: All visible layers merged together
+
+**Use Cases:**
+- Multi-character masking with separate layers per character
+- Complex inpainting with isolated regions
+- Architectural elements (walls, floors, ceiling as separate layers)
+- Object-specific regional prompting
+- Iterative mask refinement without losing previous work
+
+**How to Use:**
+1. Upload a base image
+2. Click "Open Mask Editor"
+3. Select a layer from the layer panel
+4. Paint your mask using the canvas
+5. Add more layers as needed for different regions
+6. Toggle layer visibility to check individual masks
+7. Save and use output masks in your workflow
+
+**Pro Tips:**
+- Use different layers for each distinct element
+- Toggle layer visibility to focus on one mask at a time
+- Start with lower zoom for broad strokes, zoom in for details
+- Use Fill Layer to quickly block out large areas
+- Combined mask output is perfect for simple workflows
+- Individual layer outputs allow maximum control downstream
+
+### 9. Multi-Mask Strength Combiner
 
 Apply different ControlNet strengths to different regions of your image using masks.
 
@@ -452,7 +507,7 @@ Apply different ControlNet strengths to different regions of your image using ma
 - Gradual strength transitions
 - Complex multi-region control
 
-### 9. Regional Prompting
+### 10. Regional Prompting
 
 Use different text prompts for different masked areas.
 
@@ -465,7 +520,7 @@ Use different text prompts for different masked areas.
 **Outputs:**
 - `conditioning`: Combined prompt conditioning
 
-### 10. Regional Prompt Interpolation
+### 11. Regional Prompt Interpolation
 
 Create smooth transitions between different prompts using gradient masks.
 
@@ -480,7 +535,7 @@ Create smooth transitions between different prompts using gradient masks.
 - `conditioning`: Interpolated conditioning
 - `gradient_mask`: Visual transition preview
 
-### 11. Mask Symmetry Tool
+### 12. Mask Symmetry Tool
 
 Mirror masks across axes for symmetrical compositions.
 
@@ -495,7 +550,7 @@ Mirror masks across axes for symmetrical compositions.
 - `mask`: Symmetrical result
 - `preview`: Visual representation
 
-### 12. Auto Person Mask & Auto Background Mask
+### 13. Auto Person Mask & Auto Background Mask
 
 AI-powered automatic segmentation for quick masking.
 
