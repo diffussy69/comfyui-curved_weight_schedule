@@ -16,7 +16,7 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 - **Multi-Mask Strength Combiner**: Apply different ControlNet strengths to different regions of your image
 
 ### Regional Prompting & Masking
-- **Multi-Layer Mask Editor**: 🎨 Interactive canvas-based mask editor with multiple layers
+- **Multi-Layer Mask Editor**: 🎨 NEW! Interactive canvas-based mask editor with multiple layers
 - **Regional Prompting**: Use different text prompts for different masked areas
 - **Regional Prompt Interpolation**: Smooth gradient transitions between different prompts
 - **Mask Symmetry Tool**: Mirror masks across axes for symmetrical compositions
