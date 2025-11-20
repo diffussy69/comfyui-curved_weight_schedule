@@ -259,6 +259,8 @@ Slot B (Tile):     [0.8-1.0]  Peak      → Final polish only
 - Overlapping windows create smooth transitions between different controls
 - Non-overlapping windows create distinct phases
 - Disable unused slots to reduce clutter
+<img width="882" height="832" alt="image" src="https://github.com/user-attachments/assets/33653f85-a6d7-4e28-ac9e-38e6ddd0f432" />
+
 
 ### 4. Curved Blur Batch Preprocessor ⭐ NEW v3.2!
 
