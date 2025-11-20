@@ -57,10 +57,11 @@ class InteractiveCurveDesigner:
             
             # Extract x and y coordinates
             points_x = np.array([p["x"] for p in points])
-            points_y = np.array([p["y"] for p in points])
+            # IMPORTANT: Invert Y-axis because canvas has Y=0 at top, graph has Y=0 at bottom
+            points_y = 1.0 - np.array([p["y"] for p in points])
             
-            # DEBUG: Print received points
-            print(f"[Interactive Curve Designer] Received points:")
+            # DEBUG: Print received points (after Y-flip)
+            print(f"[Interactive Curve Designer] Received points (after Y-flip):")
             for i, (x, y) in enumerate(zip(points_x, points_y)):
                 print(f"  P{i+1}: x={x:.3f}, y={y:.3f}")
             
@@ -73,9 +74,12 @@ class InteractiveCurveDesigner:
             t = np.linspace(0, 1, resolution)
             curve, formula = self.interpolate_curve(t, points_x, points_y, interpolation_method)
             
-            # DEBUG: Check curve direction
-            print(f"[DEBUG] First curve value: {curve[0]:.3f}, Last curve value: {curve[-1]:.3f}")
-            print(f"[DEBUG] First point Y: {points_y[0]:.3f}, Last point Y: {points_y[-1]:.3f}")
+            # DEBUG: Check curve direction and range
+            print(f"[DEBUG] Curve stats BEFORE normalization:")
+            print(f"  - First value: {curve[0]:.3f}, Last value: {curve[-1]:.3f}")
+            print(f"  - Min: {np.min(curve):.3f}, Max: {np.max(curve):.3f}")
+            print(f"  - Mean: {np.mean(curve):.3f}, Std: {np.std(curve):.3f}")
+            print(f"[DEBUG] Point Y values: First={points_y[0]:.3f}, Last={points_y[-1]:.3f}")
             
             # Store original points for preview
             original_points_y = points_y.copy()
@@ -93,10 +97,18 @@ class InteractiveCurveDesigner:
             else:
                 display_points_y = original_points_y
             
-            print(f"[DEBUG] After normalize - First curve: {curve[0]:.3f}, Last curve: {curve[-1]:.3f}")
-            print(f"[DEBUG] Display points: {display_points_y}")
+            print(f"[DEBUG] After normalize - First: {curve[0]:.3f}, Last: {curve[-1]:.3f}")
+            print(f"[DEBUG] Display points Y: {display_points_y}")
             
-            # Clamp
+            # Warn if curve has extreme values before clamping
+            if np.max(curve) > 2.0 or np.min(curve) < -0.5:
+                print(f"[WARNING] Extreme curve values detected! Min: {np.min(curve):.3f}, Max: {np.max(curve):.3f}")
+                print(f"[WARNING] This might indicate interpolation overshooting. Consider:")
+                print(f"           - Using 'linear' or 'cubic_spline' instead of 'hermite'")
+                print(f"           - Adding more intermediate control points")
+                print(f"           - Reducing the rate of change between adjacent points")
+            
+            # Clamp to reasonable range
             curve = np.clip(curve, 0, 2.0)
             
             # Generate preview with normalized display points

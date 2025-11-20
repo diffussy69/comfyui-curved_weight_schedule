@@ -42,7 +42,8 @@ NODE_MODULES = [
     "interactive_curve_designer",
     "batch_to_timestep_keyframes",
     "curved_tile_preprocessor",
-    "multi_layer_mask_editor",  # <-- NEW: Multi-layer mask editor
+    "multi_layer_mask_editor",
+    "multi_controlnet_curve_coordinator",
 ]
 
 # Initialize mappings
