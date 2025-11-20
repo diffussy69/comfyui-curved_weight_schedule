@@ -7,8 +7,9 @@ Advanced ControlNet scheduling, regional prompting, and image utilities for Comf
 ### ControlNet Scheduling
 - **Curved ControlNet Scheduler**: Schedule ControlNet strength across generation steps with multiple curve types
 - **Advanced Curved ControlNet Scheduler**: Feature-rich version with presets, custom formulas, curve blending, and more
-- **Curved Blur Batch Preprocessor**: ⭐ NEW! Generate batches of progressively blurred images following curves
-- **Batch Images to Timestep Keyframes**: ⭐ NEW! Map blur batches to ControlNet timestep keyframes
+- **Multi-ControlNet Curve Coordinator**: 🌟 NEW! Coordinate up to 4 ControlNet curves simultaneously with independent timing
+- **Curved Blur Batch Preprocessor**: ⭐ Generate batches of progressively blurred images following curves
+- **Batch Images to Timestep Keyframes**: ⭐ Map blur batches to ControlNet timestep keyframes
 - **Curve Formula Builder**: Beginner-friendly pattern builder - select shapes and adjust sliders!
 - **Visual Curve Designer**: Plot control points with numeric inputs for precise curves
 - **Interactive Curve Designer**: 🎨 Draw curves with your mouse on an interactive canvas!
@@ -91,7 +92,7 @@ After installing and restarting:
 5. Optional: Check browser console (F12) for success messages
 
 The nodes will appear in:
-- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Curve Formula Builder, Visual Curve Designer, Interactive Curve Designer 🎨
+- `conditioning/controlnet` → Curved ControlNet Scheduler, Advanced Curved ControlNet Scheduler, Multi-ControlNet Curve Coordinator, Curve Formula Builder, Visual Curve Designer, Interactive Curve Designer 🎨
 - `ControlNet Preprocessors/tile` → Curved Blur (Batch) ⭐ NEW!
 - `ControlNet/Keyframing` → Batch Images to Timestep Keyframes ⭐ NEW!
 - `mask` → Multi-Layer Mask Editor, Multi-Mask Strength Combiner, Mask Symmetry Tool
@@ -201,7 +202,65 @@ Enhanced version with powerful new features for maximum control and flexibility.
 - **Data Analysis**: Export curves for documentation and sharing
 - **Custom Curves**: Write any mathematical function you can imagine
 
-### 3. Curved Blur Batch Preprocessor ⭐ NEW v3.2!
+### 3. Multi-ControlNet Curve Coordinator 🌟
+
+**NEW!** Coordinate multiple ControlNet curves simultaneously with independent timing windows. Perfect for complex multi-ControlNet workflows where you need different curves with different timing for each ControlNet model.
+
+**Key Features:**
+- **Up to 4 Independent Slots**: Each with its own complete curve configuration
+- **Per-Slot Timing**: Each slot has independent `start_percent` and `end_percent`
+- **Visual Coordination**: Combined graph shows all curves with shaded active windows
+- **All Curve Types**: Full access to all curve types and presets per slot
+- **Clean Organization**: Visual dividers separate each slot's settings
+
+**Slot Parameters (A, B, C, D):**
+- `enable_slot_X`: Toggle slot on/off
+- `start_percent_X` / `end_percent_X`: **Independent timing window** for this slot
+- `preset_X`: Quick preset selection (Fade Out, Fade In, Peak Control, etc.)
+- `curve_type_X`: Shape of the curve
+- `start_strength_X` / `end_strength_X`: Strength range
+- `curve_param_X`: Curve steepness/shape parameter
+
+**Outputs:**
+- `SLOT_A`, `SLOT_B`, `SLOT_C`, `SLOT_D`: Individual TIMESTEP_KF outputs
+- `combined_graph`: Visual preview showing all active curves overlaid with shaded windows
+- `info`: Text summary of all active slots
+
+**Powerful Workflow Patterns:**
+
+*Sequential Control:*
+```
+Slot A (Canny):    [0.0-0.3]  Fade Out  → Early composition lock
+Slot B (Depth):    [0.3-0.7]  Fade In   → Mid-gen structure
+Slot C (Tile):     [0.7-1.0]  Peak      → Late detail refinement
+```
+
+*Overlapping Transitions:*
+```
+Slot A (Canny):    [0.0-0.5]  Fade Out  → Gradually release
+Slot B (Depth):    [0.3-0.8]  Fade In   → Cross-fade overlap
+```
+
+*Targeted Bursts:*
+```
+Slot A (Line):     [0.0-0.2]  Strong    → Quick early guide
+Slot B (Tile):     [0.8-1.0]  Peak      → Final polish only
+```
+
+**How to Use:**
+1. Configure each slot with its own curve and timing
+2. Connect each SLOT output to its own "Apply Advanced ControlNet" node
+3. Each Apply node uses a different ControlNet model
+4. Chain them: First Apply's positive/negative → Second Apply → Third Apply → KSampler
+5. View `combined_graph` to see how all curves interact
+
+**Pro Tips:**
+- Use shaded regions in the graph to visualize when each ControlNet is active
+- Overlapping windows create smooth transitions between different controls
+- Non-overlapping windows create distinct phases
+- Disable unused slots to reduce clutter
+
+### 4. Curved Blur Batch Preprocessor ⭐ NEW v3.2!
 
 **The missing piece for dynamic tile ControlNet workflows!**
 
@@ -250,7 +309,7 @@ Takes a single image and generates multiple versions with different blur amounts
     (see next node)
 ```
 
-### 4. Batch Images to Timestep Keyframes ⭐ NEW v3.2!
+### 5. Batch Images to Timestep Keyframes ⭐ NEW v3.2!
 
 **The bridge between dynamic blur and ControlNet scheduling.**
 
@@ -315,7 +374,7 @@ Takes the batch of blurred images from the Curved Blur Preprocessor and attaches
 *Late generation (60-100%):*
 - **Heavy blur (sigma 6-8)** + **Weak ControlNet (0.3)** = Creative freedom for details
 
-### 5. Curve Formula Builder
+### 6. Curve Formula Builder
 
 **Beginner-friendly curve creator - no math knowledge required!**
 
@@ -358,7 +417,7 @@ Build custom curves using pre-made patterns with simple sliders. Perfect for lea
 - Combine with Advanced Scheduler's blend feature for complex curves
 - Export formulas to a text file for your personal library
 
-### 6. Visual Curve Designer
+### 7. Visual Curve Designer
 
 **Point-based curve creation with numeric precision.**
 
@@ -387,7 +446,7 @@ Define curves by specifying exact control point coordinates. Perfect when you kn
 - Mathematical precision needed
 - Building libraries of exact curves
 
-### 7. Interactive Curve Designer 🎨
+### 8. Interactive Curve Designer 🎨
 
 **The most intuitive way to create curves - draw with your mouse!**
 
@@ -432,7 +491,7 @@ Click and drag on an interactive canvas to create custom curves visually. No num
 - Enable grid_lines for precise alignment
 - Save formula_output for your favorite curves
 
-### 8. Multi-Layer Mask Editor
+### 9. Multi-Layer Mask Editor
 
 🎨 Interactive canvas-based mask editor with multiple layers, pan/zoom, and professional painting tools. Perfect for creating complex masks with separate elements.
 
@@ -486,7 +545,7 @@ Click and drag on an interactive canvas to create custom curves visually. No num
 - Combined mask output is perfect for simple workflows
 - Individual layer outputs allow maximum control downstream
 
-### 9. Multi-Mask Strength Combiner
+### 10. Multi-Mask Strength Combiner
 
 Apply different ControlNet strengths to different regions of your image using masks.
 
@@ -507,7 +566,7 @@ Apply different ControlNet strengths to different regions of your image using ma
 - Gradual strength transitions
 - Complex multi-region control
 
-### 10. Regional Prompting
+### 11. Regional Prompting
 
 Use different text prompts for different masked areas.
 
@@ -520,7 +579,7 @@ Use different text prompts for different masked areas.
 **Outputs:**
 - `conditioning`: Combined prompt conditioning
 
-### 11. Regional Prompt Interpolation
+### 12. Regional Prompt Interpolation
 
 Create smooth transitions between different prompts using gradient masks.
 
@@ -535,7 +594,7 @@ Create smooth transitions between different prompts using gradient masks.
 - `conditioning`: Interpolated conditioning
 - `gradient_mask`: Visual transition preview
 
-### 12. Mask Symmetry Tool
+### 13. Mask Symmetry Tool
 
 Mirror masks across axes for symmetrical compositions.
 
@@ -550,7 +609,7 @@ Mirror masks across axes for symmetrical compositions.
 - `mask`: Symmetrical result
 - `preview`: Visual representation
 
-### 13. Auto Person Mask & Auto Background Mask
+### 14. Auto Person Mask & Auto Background Mask
 
 AI-powered automatic segmentation for quick masking.
 
@@ -833,6 +892,23 @@ Cubic easing, very smooth
 
 ## 🆕 What's New
 
+### Version 3.3 - Multi-ControlNet Coordination 🎯
+- **🌟 MAJOR: Multi-ControlNet Curve Coordinator** - Coordinate multiple ControlNets simultaneously!
+  - Manage up to 4 independent ControlNet curves in one node
+  - **Per-slot timing**: Each slot has its own start_percent and end_percent
+  - Visual dividers for clean organization
+  - Combined graph with shaded active windows
+  - All curve types and presets available per slot
+  - Perfect for complex multi-ControlNet workflows
+- **✨ Use Cases**:
+  - Sequential control: Different CNs at different stages
+  - Overlapping transitions: Smooth handoffs between controls
+  - Targeted bursts: Activate specific CNs only when needed
+  - Coordinated effects: Visualize how multiple curves interact
+- **🐛 Bug Fixes**:
+  - Fixed bell_curve and oscillating presets (were showing flat lines)
+  - Updated all curve presets to use proper start/end strength values
+
 ### Version 3.2 - Dynamic Blur Workflow 🌊
 - **🌊 MAJOR: Curved Blur Batch Preprocessor** - Sync blur with ControlNet scheduling!
   - Generate batches of progressively blurred images following curves
@@ -933,4 +1009,4 @@ If you find this useful, consider starring the repo and sharing your creations!
 
 ---
 
-**Version:** 3.2 (Dynamic Blur Workflow - Sync Blur & Strength! 🌊)
+**Version:** 3.3 (Multi-ControlNet Coordination! 🎯)
