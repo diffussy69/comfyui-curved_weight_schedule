@@ -267,6 +267,7 @@ Slot B (Tile):     [0.8-1.0]  Peak      → Final polish only
 **The missing piece for dynamic tile ControlNet workflows!**
 
 Creates a batch of images with progressively varying Gaussian blur following mathematical curves. Pair this with the Batch Images to Timestep Keyframes node to synchronize blur progression with your ControlNet strength curves.
+<img width="970" height="774" alt="image" src="https://github.com/user-attachments/assets/2858f0b3-2e7d-4642-8cac-4398eaab4064" />
 
 **What It Does:**
 Takes a single image and generates multiple versions with different blur amounts, perfect for pairing with ControlNet tile models. Low blur = more structure preserved, high blur = more creative freedom for the AI.
@@ -316,6 +317,7 @@ Takes a single image and generates multiple versions with different blur amounts
 **The bridge between dynamic blur and ControlNet scheduling.**
 
 Maps a batch of images to existing ControlNet timestep keyframes by index. This is the "glue" that connects your blur progression with ControlNet strength curves.
+<img width="970" height="774" alt="image" src="https://github.com/user-attachments/assets/1cc271b1-dad7-4aa3-900d-cad10ccffbb5" />
 
 **What It Does:**
 Takes the batch of blurred images from the Curved Blur Preprocessor and attaches each image to the corresponding keyframe created by your scheduler. Image 0 goes to keyframe 0, image 1 to keyframe 1, etc.
